@@ -52,17 +52,19 @@ const contactEmail = ""; // add your email here when ready
               When you visit {siteName}, we and our third-party service providers may automatically collect certain information, including:
             </p>
             <ul class="flex flex-col gap-1.5">
-              {[
-                "IP address and approximate geographic location (country/region)",
-                "Browser type and version, operating system, and device type",
-                "Pages visited, time spent on each page, and referring URL",
-                "Date and time of your visit",
-                "Clicks on affiliate links (logged by Amazon's systems, not ours)",
-              ].map(item => (
-                <li class="flex items-start gap-2 font-mono text-[12px] text-steel/75">
-                  <span class="text-accent mt-0.5 shrink-0">→</span>{item}
-                </li>
-              ))}
+              {
+                [
+                  "IP address and approximate geographic location (country/region)",
+                  "Browser type and version, operating system, and device type",
+                  "Pages visited, time spent on each page, and referring URL",
+                  "Date and time of your visit",
+                  "Clicks on affiliate links (logged by Amazon's systems, not ours)",
+                ].map(item => (
+                  <li class="flex items-start gap-2 font-mono text-[12px] text-steel/75">
+                    <span class="text-accent mt-0.5 shrink-0">→</span>{item}
+                  </li>
+                ))
+              }
             </ul>
           </div>
 
@@ -85,18 +87,20 @@ const contactEmail = ""; // add your email here when ready
             We use the information we collect for the following purposes:
           </p>
           <ul class="flex flex-col gap-2">
-            {[
-              "To operate and maintain the website and ensure it functions correctly",
-              "To analyse traffic patterns and understand which content is most useful to readers",
-              "To route affiliate links to the correct Amazon regional storefront (India vs. Global) using geo-detection",
-              "To detect, prevent, and address technical issues or security threats",
-              "To respond to your direct communications (e.g., emails sent to us)",
-              "To comply with legal obligations",
-            ].map(item => (
-              <li class="flex items-start gap-2 font-mono text-[12px] text-steel/75">
-                <span class="text-glow mt-0.5 shrink-0">✓</span>{item}
-              </li>
-            ))}
+            {
+              [
+                "To operate and maintain the website and ensure it functions correctly",
+                "To analyse traffic patterns and understand which content is most useful to readers",
+                "To route affiliate links to the correct Amazon regional storefront (India vs. Global) using geo-detection",
+                "To detect, prevent, and address technical issues or security threats",
+                "To respond to your direct communications (e.g., emails sent to us)",
+                "To comply with legal obligations",
+              ].map(item => (
+                <li class="flex items-start gap-2 font-mono text-[12px] text-steel/75">
+                  <span class="text-glow mt-0.5 shrink-0">✓</span>{item}
+                </li>
+              ))
+            }
           </ul>
           <p class="font-mono text-[12px] text-steel/60 leading-relaxed mt-4 italic">
             We do not sell your personal information to third parties. We do not use your data for behavioural advertising on this site.
@@ -134,17 +138,19 @@ const contactEmail = ""; // add your email here when ready
             We do not sell, trade, or rent your personal information. We may share information with third parties only in the following limited circumstances:
           </p>
           <ul class="flex flex-col gap-2">
-            {[
-              { label: "Service Providers", body: "We use Vercel (hosting & edge functions) and Sanity.io (content management). These providers process data on our behalf under their own privacy policies and data processing agreements." },
-              { label: "Analytics", body: "We use Google Analytics (or a privacy-first alternative such as Vercel Analytics) to understand site traffic. Aggregated, anonymised data is shared with these services. No personally identifiable information is intentionally sent." },
-              { label: "Legal Compliance", body: "We may disclose information if required by law, court order, or government authority, or if we believe in good faith that disclosure is necessary to protect our rights, your safety, or the safety of others." },
-              { label: "Business Transfer", body: "If TheBudgetAesthetic is sold or merged, user information may be transferred to the new owner subject to this Privacy Policy." },
-            ].map(({ label, body }) => (
-              <li class="flex flex-col gap-1">
-                <span class="font-display font-bold text-[13px] text-ink">{label}</span>
-                <p class="font-mono text-[12px] text-steel/70 leading-relaxed">{body}</p>
-              </li>
-            ))}
+            {
+              [
+                { label: "Service Providers", body: "We use Vercel (hosting & edge functions) and Sanity.io (content management). These providers process data on our behalf under their own privacy policies and data processing agreements." },
+                { label: "Analytics", body: "We use Google Analytics (or a privacy-first alternative such as Vercel Analytics) to understand site traffic. Aggregated, anonymised data is shared with these services. No personally identifiable information is intentionally sent." },
+                { label: "Legal Compliance", body: "We may disclose information if required by law, court order, or government authority, or if we believe in good faith that disclosure is necessary to protect our rights, your safety, or the safety of others." },
+                { label: "Business Transfer", body: "If TheBudgetAesthetic is sold or merged, user information may be transferred to the new owner subject to this Privacy Policy." },
+              ].map(({ label, body }) => (
+                <li class="flex flex-col gap-1">
+                  <span class="font-display font-bold text-[13px] text-ink">{label}</span>
+                  <p class="font-mono text-[12px] text-steel/70 leading-relaxed">{body}</p>
+                </li>
+              ))
+            }
           </ul>
         </div>
       </section>
@@ -192,19 +198,21 @@ const contactEmail = ""; // add your email here when ready
             Depending on your jurisdiction, you may have the following rights regarding your personal data:
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { right: "Access", desc: "Request a copy of the personal data we hold about you." },
-              { right: "Correction", desc: "Ask us to correct inaccurate or incomplete data." },
-              { right: "Deletion", desc: "Request deletion of your personal data (right to be forgotten)." },
-              { right: "Portability", desc: "Receive your data in a structured, machine-readable format." },
-              { right: "Objection", desc: "Object to processing of your data for certain purposes." },
-              { right: "Opt-out of cookies", desc: "Use your browser settings to block or delete cookies at any time." },
-            ].map(({ right, desc }) => (
-              <div class="glass rounded-xl p-4">
-                <p class="font-display font-bold text-[13px] text-ink mb-1">{right}</p>
-                <p class="font-mono text-[11px] text-steel/65 leading-relaxed">{desc}</p>
-              </div>
-            ))}
+            {
+              [
+                { right: "Access", desc: "Request a copy of the personal data we hold about you." },
+                { right: "Correction", desc: "Ask us to correct inaccurate or incomplete data." },
+                { right: "Deletion", desc: "Request deletion of your personal data (right to be forgotten)." },
+                { right: "Portability", desc: "Receive your data in a structured, machine-readable format." },
+                { right: "Objection", desc: "Object to processing of your data for certain purposes." },
+                { right: "Opt-out of cookies", desc: "Use your browser settings to block or delete cookies at any time." },
+              ].map(({ right, desc }) => (
+                <div class="glass rounded-xl p-4">
+                  <p class="font-display font-bold text-[13px] text-ink mb-1">{right}</p>
+                  <p class="font-mono text-[11px] text-steel/65 leading-relaxed">{desc}</p>
+                </div>
+              ))
+            }
           </div>
           <p class="font-mono text-[12px] text-steel/65 leading-relaxed mt-4">
             To exercise any of these rights, email us at <a href={`mailto:${contactEmail}`} class="text-accent underline underline-offset-2">{contactEmail}</a>. We will respond within 30 days. For GDPR requests, we may ask you to verify your identity before processing.
