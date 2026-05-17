@@ -2,8 +2,7 @@
 // src/pages/blog/[slug].astro — Dynamic blog post page (SSR)
 import BaseLayout  from "../../layouts/BaseLayout.astro";
 import ProductCard from "../../components/ProductCard.astro";
-import { sanityClient, POST_BY_SLUG_QUERY, ALL_SLUGS_QUERY, heroImageUrl } from "../../lib/sanity.js";
-import { PortableText } from "@portabletext/react";
+import { sanityClient, POST_BY_SLUG_QUERY, heroImageUrl } from "../../lib/sanity.js";
 
 // SSR mode — fetch on each request for always-fresh content
 const { slug } = Astro.params;
@@ -34,18 +33,6 @@ const metaDesc  = post.seo?.metaDescription || post.excerpt;
 const ogImg     = post.seo?.ogImage
   ? heroImageUrl(post.seo.ogImage, 1200)
   : heroImg;
-
-// Portable Text component map
-const components = {
-  types: {
-    image: ({ value }) => (
-      `<figure class="my-8">
-        <img src="${heroImageUrl(value, 800)}" alt="${value.alt || ''}" loading="lazy" class="w-full rounded-2xl shadow-card" />
-        ${value.caption ? `<figcaption>${value.caption}</figcaption>` : ""}
-      </figure>`
-    ),
-  },
-};
 
 // JSON-LD — Article schema
 const articleSchema = {
