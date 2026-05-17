@@ -1,0 +1,142 @@
+---
+// src/components/Navbar.astro — Tech + Decor focused navigation
+const navLinks = [
+  { label: "Home",        href: "/"                    },
+  { label: "Tech Picks",  href: "/category/tech-picks" },
+  { label: "Desk Setups", href: "/category/desk-setups"},
+  { label: "Room Decor",  href: "/category/room-decor" },
+  { label: "Blog",        href: "/blog"                },
+];
+const { currentPath = "/" } = Astro.props;
+---
+
+<header class="fixed top-0 left-0 right-0 z-50" id="navbar">
+  <nav class="glass-nav px-5 sm:px-8 transition-all duration-300">
+    <div class="max-w-6xl mx-auto flex items-center justify-between h-[62px]">
+
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-2.5 group shrink-0" aria-label="TheBudgetAesthetic Home">
+        <!-- Inline SVG icon mark -->
+        <svg width="32" height="32" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0">
+          <rect x="3" y="10" width="28" height="20" rx="3" stroke="#0F0F0F" stroke-width="1.8" fill="none"/>
+          <path d="M10 30L10 38M24 30L24 38M6 38L28 38" stroke="#0F0F0F" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="17" cy="20" r="2.5" fill="#C8A96A"/>
+          <path d="M6 20L14 20M20 20L28 20M17 12L17 17" stroke="#C8A96A" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M17 10C17 5 13 4 11 7" stroke="#7DD3C8" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          <path d="M17 10C17 5 21 4 23 7" stroke="#7DD3C8" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          <circle cx="11" cy="6.5" r="1.5" fill="#7DD3C8" opacity="0.8"/>
+          <circle cx="23" cy="6.5" r="1.5" fill="#7DD3C8" opacity="0.6"/>
+          <!-- Right side: chair/plant hint -->
+          <path d="M34 20C34 14 40 12 40 18" stroke="#C8A96A" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          <circle cx="40" cy="11" r="2" fill="#C8A96A" opacity="0.5"/>
+          <rect x="32" y="22" width="10" height="2" rx="1" fill="#0F0F0F" opacity="0.25"/>
+        </svg>
+
+        <div class="flex flex-col leading-none">
+          <span class="font-display font-bold text-[13px] tracking-tight text-ink">TheBudget</span>
+          <span class="font-display font-bold text-[13px] tracking-tight text-accent">Aesthetic</span>
+        </div>
+      </a>
+
+      <!-- Desktop Links -->
+      <ul class="hidden md:flex items-center gap-1" role="list">
+        {navLinks.map(({ label, href }) => (
+          <li>
+            <a
+              href={href}
+              class:list={[
+                "font-mono text-[11px] font-medium tracking-widest uppercase px-3 py-2 rounded-lg transition-all duration-150",
+                currentPath === href || currentPath.startsWith(href + "/") && href !== "/"
+                  ? "bg-ink/8 text-ink"
+                  : "text-steel/80 hover:text-ink hover:bg-ink/5"
+              ]}
+            >
+              {label}
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <!-- Right actions -->
+      <div class="flex items-center gap-2">
+        <!-- Search icon -->
+        <button
+          aria-label="Search"
+          class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-ink/6 transition-colors text-steel hover:text-ink"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+        </button>
+
+        <!-- Mobile hamburger -->
+        <button
+          id="mobile-menu-btn"
+          aria-label="Open menu"
+          aria-expanded="false"
+          class="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-[5px] rounded-full hover:bg-ink/6 transition-colors"
+        >
+          <span class="w-[18px] h-[1.5px] bg-ink rounded-full transition-all duration-200" id="ham-1"></span>
+          <span class="w-[14px] h-[1.5px] bg-ink rounded-full transition-all duration-200" id="ham-2"></span>
+          <span class="w-[18px] h-[1.5px] bg-ink rounded-full transition-all duration-200" id="ham-3"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div
+      id="mobile-menu"
+      class="md:hidden overflow-hidden transition-all duration-300 max-h-0"
+      aria-hidden="true"
+    >
+      <div class="pb-4 pt-1 border-t border-ink/8 mt-1">
+        <ul class="flex flex-col gap-0.5" role="list">
+          {navLinks.map(({ label, href }) => (
+            <li>
+              <a
+                href={href}
+                class="flex items-center gap-2 px-3 py-2.5 rounded-xl font-mono text-[11px] tracking-widest uppercase text-steel hover:text-ink hover:bg-ink/5 transition-colors"
+              >
+                <span class="text-accent">→</span> {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const btn  = document.getElementById("mobile-menu-btn");
+  const menu = document.getElementById("mobile-menu");
+  const h1   = document.getElementById("ham-1");
+  const h2   = document.getElementById("ham-2");
+  const h3   = document.getElementById("ham-3");
+
+  let open = false;
+  btn?.addEventListener("click", () => {
+    open = !open;
+    menu.style.maxHeight = open ? menu.scrollHeight + "px" : "0";
+    menu.setAttribute("aria-hidden", String(!open));
+    btn.setAttribute("aria-expanded", String(open));
+    if (open) {
+      h1.style.transform = "rotate(45deg) translateY(6.5px)";
+      h2.style.opacity = "0"; h2.style.transform = "scaleX(0)";
+      h3.style.transform = "rotate(-45deg) translateY(-6.5px)";
+      h3.style.width = "18px";
+    } else {
+      h1.style.transform = h2.style.transform = h3.style.transform = "";
+      h2.style.opacity = "1"; h2.style.transform = "";
+    }
+  });
+
+  // Elevate navbar on scroll
+  const navbar = document.getElementById("navbar");
+  let lastY = 0;
+  window.addEventListener("scroll", () => {
+    const y = window.scrollY;
+    navbar.classList.toggle("shadow-sm", y > 10);
+    lastY = y;
+  }, { passive: true });
+</script>

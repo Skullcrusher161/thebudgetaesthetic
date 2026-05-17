@@ -1,0 +1,16 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+<BaseLayout title="Page Not Found" description="This page doesn't exist." noIndex={true}>
+  <div class="max-w-lg mx-auto px-5 py-40 text-center">
+    <div class="relative inline-block mb-8">
+      <span class="font-display text-[8rem] font-bold text-ink/6 leading-none select-none">404</span>
+      <span class="absolute inset-0 flex items-center justify-center font-mono text-[10px] uppercase tracking-[0.3em] text-steel/50">not found</span>
+    </div>
+    <h1 class="font-display text-2xl font-bold text-ink mb-3">This page got lost in the build</h1>
+    <p class="font-mono text-[12px] text-steel/60 mb-8 leading-relaxed">
+      The page you're looking for doesn't exist. Maybe it moved, or maybe the link is wrong.
+    </p>
+    <a href="/" class="btn-primary">Back to Home</a>
+  </div>
+</BaseLayout>

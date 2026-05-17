@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+sanity/node_modules/
+
+# Build output
+dist/
+.astro/
+sanity/dist/
+
+# Vercel
+.vercel/
+
+# Environment variables — NEVER commit these
+.env
+.env.*
+!.env.example
+
+# Sanity tokens / secrets
+sanity/.env
+sanity/.env.*
+sanity.cli.js
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Temp
+tmp-*.mjs

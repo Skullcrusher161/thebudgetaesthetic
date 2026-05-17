@@ -1,0 +1,149 @@
+---
+/**
+ * src/components/PortableText.astro
+ *
+ * Renders Sanity Portable Text blocks as HTML.
+ * Handles: paragraphs, headings, blockquotes, images, links, callout boxes.
+ *
+ * NOTE: For production, consider using @portabletext/to-html for more
+ * complex nested marks. This implementation covers 95% of use cases.
+ */
+
+import { urlFor } from "../lib/sanity.js";
+
+interface Props {
+  value: any[];
+}
+
+const { value } = Astro.props;
+
+function renderMark(text: string, marks: string[]): string {
+  let out = text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  for (const mark of marks) {
+    if (mark === "strong")    out = `<strong>${out}</strong>`;
+    else if (mark === "em")   out = `<em>${out}</em>`;
+    else if (mark === "underline") out = `<u>${out}</u>`;
+  }
+  return out;
+}
+
+// We'll serialize inline — complex spans/annotations handled below
+function renderSpans(children: any[], markDefs: any[] = []): string {
+  return children.map((child) => {
+    if (child._type !== "span") return "";
+    const text   = child.text ?? "";
+    const marks  = child.marks ?? [];
+    const linkMark = marks.find((m: string) =>
+      markDefs.some((d) => d._key === m && d._type === "link")
+    );
+    if (linkMark) {
+      const def   = markDefs.find((d) => d._key === linkMark);
+      const rel   = ["noopener", def?.nofollow !== false ? "nofollow" : ""].filter(Boolean).join(" ");
+      const extra = def?.blank ? ` target="_blank"` : "";
+      return `<a href="${def.href}" rel="${rel}"${extra}>${renderMark(text, marks.filter((m: string) => m !== linkMark))}</a>`;
+    }
+    return renderMark(text, marks);
+  }).join("");
+}
+
+const calloutStyles: Record<string, { icon: string; bg: string; border: string }> = {
+  tip:    { icon: "💡", bg: "bg-sage-100",   border: "border-sage-200"  },
+  pick:   { icon: "⚡", bg: "bg-amber-50",   border: "border-amber-200" },
+  budget: { icon: "💸", bg: "bg-blush-100",  border: "border-blush-200" },
+};
+---
+
+<div class="portable-text">
+  {value?.map((block) => {
+    // ── Image block ─────────────────────────────────────────────────────
+    if (block._type === "image") {
+      const src = urlFor(block).width(900).auto("format").quality(85).url();
+      return (
+        <figure class="my-8">
+          <img
+            src={src}
+            alt={block.alt ?? ""}
+            loading="lazy"
+            decoding="async"
+            class="w-full rounded-xl shadow-md"
+          />
+          {block.caption && (
+            <figcaption class="text-center text-sm text-warm-500 mt-2 italic">
+              {block.caption}
+            </figcaption>
+          )}
+        </figure>
+      );
+    }
+
+    // ── Callout box ─────────────────────────────────────────────────────
+    if (block._type === "callout") {
+      const s = calloutStyles[block.variant] ?? calloutStyles.tip;
+      return (
+        <aside class={`my-6 px-5 py-4 rounded-xl border ${s.bg} ${s.border} flex gap-3`}>
+          <span class="text-xl leading-none pt-0.5" aria-hidden="true">{s.icon}</span>
+          <p class="text-sm text-warm-800 leading-relaxed m-0">{block.text}</p>
+        </aside>
+      );
+    }
+
+    // ── Standard portable text block ────────────────────────────────────
+    if (block._type === "block") {
+      const html = renderSpans(block.children ?? [], block.markDefs ?? []);
+
+      if (block.style === "h2") return <h2 set:html={html} />;
+      if (block.style === "h3") return <h3 set:html={html} />;
+      if (block.style === "h4") return <h4 set:html={html} />;
+      if (block.style === "blockquote") return <blockquote set:html={html} />;
+
+      // Normal paragraph
+      if (!html.trim()) return <br />;
+      return <p set:html={html} />;
+    }
+
+    return null;
+  })}
+</div>
+
+<style>
+  .portable-text :global(h2),
+  .portable-text :global(h3),
+  .portable-text :global(h4) {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    color: #2C2418;
+    line-height: 1.25;
+    margin-top: 2.25rem;
+    margin-bottom: 0.75rem;
+  }
+  .portable-text :global(h2) { font-size: 1.875rem; font-weight: 600; }
+  .portable-text :global(h3) { font-size: 1.5rem;   font-weight: 600; }
+  .portable-text :global(h4) { font-size: 1.2rem;   font-weight: 600; }
+
+  .portable-text :global(p) {
+    color: #3D3326;
+    line-height: 1.8;
+    margin-bottom: 1.25rem;
+    font-size: 1.0625rem;
+  }
+
+  .portable-text :global(blockquote) {
+    border-left: 3px solid #9DB89A;
+    margin: 1.75rem 0;
+    padding: 0.5rem 1.25rem;
+    background: #F4EFE3;
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    color: #5C4E38;
+  }
+
+  .portable-text :global(a) {
+    color: #4A7045;
+    text-decoration: underline;
+    text-decoration-color: #C8D8C6;
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+  }
+  .portable-text :global(a:hover) { color: #9DB89A; }
+
+  .portable-text :global(strong) { font-weight: 600; color: #2C2418; }
+</style>

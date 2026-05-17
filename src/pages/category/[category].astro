@@ -1,0 +1,85 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const { category } = Astro.params;
+if (!category) return Astro.redirect("/blog");
+
+let posts = [];
+try {
+  const { sanityClient, POSTS_BY_CATEGORY_QUERY } = await import("../../lib/sanity.js");
+  posts = await sanityClient.fetch(POSTS_BY_CATEGORY_QUERY, { category });
+} catch {}
+
+const labels = {
+  "tech-picks":  { label: "Tech Picks",  tag: "GADGETS & GEAR", tagClass: "tag-tech",  icon: "🖥️",  desc: "Monitors, keyboards, audio, cameras — best budget tech that actually looks good." },
+  "desk-setups": { label: "Desk Setups", tag: "WORKSPACES",     tagClass: "tag-setup", icon: "🗂️",  desc: "Complete desk build guides, cable management, and monitor setups." },
+  "room-decor":  { label: "Room Decor",  tag: "INTERIORS",      tagClass: "tag-decor", icon: "🏡",  desc: "Aesthetic room makeovers, wall art, lighting, plants, and furniture on a budget." },
+};
+const meta = labels[category] || { label: category.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()), tag: "POSTS", tagClass: "tag-setup", icon: "📂", desc: "" };
+---
+
+<BaseLayout
+  title={meta.label}
+  description={`${meta.desc} Curated by TheBudgetAesthetic.`}
+>
+  <div class="max-w-6xl mx-auto px-5 sm:px-8 py-14">
+
+    <!-- Header -->
+    <div class="mb-12 animate-fade-up">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="w-5 h-px bg-accent"></span>
+        <span class={`tag ${meta.tagClass}`}>{meta.tag}</span>
+      </div>
+      <h1 class="font-display text-4xl md:text-5xl font-bold text-ink tracking-tight flex items-center gap-3">
+        <span class="text-4xl">{meta.icon}</span>
+        {meta.label}
+      </h1>
+      {meta.desc && (
+        <p class="font-mono text-[12px] text-steel/60 mt-3 max-w-lg leading-relaxed">{meta.desc}</p>
+      )}
+    </div>
+
+    {posts.length > 0 ? (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {posts.map((post, i) => (
+          <a
+            href={`/blog/${post.slug.current}`}
+            class="group glass rounded-2xl overflow-hidden card-shadow flex flex-col animate-fade-up"
+            style={`animation-delay: ${i * 60}ms`}
+          >
+            <div class="h-44 bg-warm dot-grid flex items-center justify-center">
+              <span class="font-mono text-[9px] text-steel/25 uppercase tracking-widest">{meta.tag}</span>
+            </div>
+            <div class="p-5 flex-1 flex flex-col gap-2">
+              <h2 class="font-display font-bold text-[15px] text-ink leading-snug group-hover:text-accent transition-colors">
+                {post.title}
+              </h2>
+              {post.excerpt && <p class="font-mono text-[11px] text-steel/60 line-clamp-2 flex-1">{post.excerpt}</p>}
+              <div class="flex items-center justify-between pt-3 border-t border-ink/6">
+                <span class="font-mono text-[9px] text-dim">
+                  {new Date(post.publishedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                </span>
+                <span class="font-mono text-[9px] text-dim">{post.readTime} min</span>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <!-- Empty category state -->
+      <div class="glass rounded-3xl p-16 text-center animate-fade-up animation-delay-100">
+        <span class="text-5xl block mb-5">{meta.icon}</span>
+        <p class="font-display font-bold text-2xl text-ink mb-3">{meta.label} posts coming soon</p>
+        <p class="font-mono text-[12px] text-steel/60 max-w-xs mx-auto leading-relaxed mb-8">
+          This section is being curated. The first {meta.label.toLowerCase()} guide will be up shortly.
+        </p>
+        <div class="flex flex-wrap justify-center gap-2 mb-8">
+          <a href="/category/tech-picks"  class="tag tag-tech  px-4 py-2">Tech Picks</a>
+          <a href="/category/desk-setups" class="tag tag-setup px-4 py-2">Desk Setups</a>
+          <a href="/category/room-decor"  class="tag tag-decor px-4 py-2">Room Decor</a>
+        </div>
+        <a href="/" class="btn-primary inline-flex">← Back to Home</a>
+      </div>
+    )}
+  </div>
+</BaseLayout>

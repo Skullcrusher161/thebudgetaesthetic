@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" fill="none">
+  <!-- Icon mark: monitor + plant sprout hybrid -->
+  <g>
+    <!-- Monitor screen -->
+    <rect x="2" y="6" width="34" height="24" rx="3.5" stroke="#0F0F0F" stroke-width="2" fill="none"/>
+    <!-- Monitor stand -->
+    <path d="M12 30 L12 38 M26 30 L26 38 M8 38 L30 38" stroke="#0F0F0F" stroke-width="2" stroke-linecap="round"/>
+    <!-- Screen content: circuit line + node -->
+    <circle cx="19" cy="18" r="2.5" fill="#C8A96A"/>
+    <path d="M8 18 L16 18 M22 18 L30 18 M19 10 L19 15" stroke="#C8A96A" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Sprout from top of monitor -->
+    <path d="M19 6 C19 0 14 -2 12 2" stroke="#7DD3C8" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+    <circle cx="12" cy="1.5" r="2" fill="#7DD3C8" opacity="0.7"/>
+    <path d="M19 6 C19 0 24 -2 26 2" stroke="#7DD3C8" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+    <circle cx="26" cy="1.5" r="2" fill="#7DD3C8" opacity="0.5"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="46" y="22" font-family="'Syne', 'Arial Black', sans-serif" font-weight="700" font-size="13.5" fill="#0F0F0F" letter-spacing="-0.5">TheBudget</text>
+  <text x="46" y="37" font-family="'Syne', 'Arial Black', sans-serif" font-weight="700" font-size="13.5" fill="#C8A96A" letter-spacing="-0.5">Aesthetic</text>
+</svg>

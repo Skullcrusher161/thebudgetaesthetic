@@ -1,0 +1,331 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+const lastUpdated = "May 16, 2025";
+const siteUrl = "https://www.thebudgetaesthetic.com";
+const siteName = "TheBudgetAesthetic";
+const contactEmail = ""; // add your email here when ready
+---
+
+<BaseLayout
+  title="Privacy Policy"
+  description="Privacy Policy for TheBudgetAesthetic — how we collect, use, and protect your information."
+  currentPath="/privacy"
+>
+  <div class="max-w-3xl mx-auto px-5 sm:px-8 py-16">
+
+    <!-- Page header -->
+    <div class="mb-12 animate-fade-up">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="w-5 h-px bg-accent"></span>
+        <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-steel/55">Legal</span>
+      </div>
+      <h1 class="font-display text-4xl font-bold text-ink tracking-tight mb-3">Privacy Policy</h1>
+      <p class="font-mono text-[11px] text-dim">
+        Last updated: <time datetime="2025-05-16">{lastUpdated}</time>
+      </p>
+    </div>
+
+    <!-- Intro card -->
+    <div class="glass rounded-2xl p-6 mb-10 animate-fade-up animation-delay-100">
+      <p class="font-mono text-[12px] text-steel/80 leading-relaxed">
+        This Privacy Policy describes how <strong class="text-ink font-semibold">{siteName}</strong> ("{siteUrl}") collects, uses, and shares information about you when you visit our website. By using this site, you agree to the practices described below. If you do not agree, please do not use the site.
+      </p>
+    </div>
+
+    <!-- Policy sections -->
+    <div class="flex flex-col gap-10 animate-fade-up animation-delay-200">
+
+      <!-- 1 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">01</span>
+          Information We Collect
+        </h2>
+        <div class="flex flex-col gap-4 pl-8 border-l border-ink/8">
+
+          <div>
+            <h3 class="font-display font-bold text-[14px] text-ink mb-1.5">Information You Provide Directly</h3>
+            <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+              We do not operate any account registration, newsletter sign-up, or contact form on this site at this time. If you email us directly, we retain your email address and the content of your message solely to respond to your inquiry.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="font-display font-bold text-[14px] text-ink mb-1.5">Information Collected Automatically</h3>
+            <p class="font-mono text-[12px] text-steel/75 leading-relaxed mb-2">
+              When you visit {siteName}, we and our third-party service providers may automatically collect certain information, including:
+            </p>
+            <ul class="flex flex-col gap-1.5">
+              {[
+                "IP address and approximate geographic location (country/region)",
+                "Browser type and version, operating system, and device type",
+                "Pages visited, time spent on each page, and referring URL",
+                "Date and time of your visit",
+                "Clicks on affiliate links (logged by Amazon's systems, not ours)",
+              ].map(item => (
+                <li class="flex items-start gap-2 font-mono text-[12px] text-steel/75">
+                  <span class="text-accent mt-0.5 shrink-0">→</span>{item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="font-display font-bold text-[14px] text-ink mb-1.5">Cookies and Similar Technologies</h3>
+            <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+              We use cookies and similar tracking technologies to operate the site and improve your experience. A small session cookie (<code class="bg-ink/6 px-1 rounded text-[11px]">tba_region</code>) is set to detect your geographic region (India or Global) so that Amazon affiliate links redirect to the correct storefront. This cookie contains no personal data and expires after 24 hours. Third-party services we use (such as Google Analytics) may set their own cookies — see Section 5 for details.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">02</span>
+          How We Use Your Information
+        </h2>
+        <div class="pl-8 border-l border-ink/8">
+          <p class="font-mono text-[12px] text-steel/75 leading-relaxed mb-3">
+            We use the information we collect for the following purposes:
+          </p>
+          <ul class="flex flex-col gap-2">
+            {[
+              "To operate and maintain the website and ensure it functions correctly",
+              "To analyse traffic patterns and understand which content is most useful to readers",
+              "To route affiliate links to the correct Amazon regional storefront (India vs. Global) using geo-detection",
+              "To detect, prevent, and address technical issues or security threats",
+              "To respond to your direct communications (e.g., emails sent to us)",
+              "To comply with legal obligations",
+            ].map(item => (
+              <li class="flex items-start gap-2 font-mono text-[12px] text-steel/75">
+                <span class="text-glow mt-0.5 shrink-0">✓</span>{item}
+              </li>
+            ))}
+          </ul>
+          <p class="font-mono text-[12px] text-steel/60 leading-relaxed mt-4 italic">
+            We do not sell your personal information to third parties. We do not use your data for behavioural advertising on this site.
+          </p>
+        </div>
+      </section>
+
+      <!-- 3 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">03</span>
+          Affiliate Links & Amazon Associates
+        </h2>
+        <div class="pl-8 border-l border-ink/8">
+          <div class="glass rounded-xl p-5 mb-4">
+            <p class="font-mono text-[12px] text-steel/80 leading-relaxed">
+              <strong class="text-ink">{siteName} is a participant in the Amazon Associates Programme</strong>, an affiliate advertising programme designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.in and Amazon.com.
+            </p>
+          </div>
+          <p class="font-mono text-[12px] text-steel/75 leading-relaxed mb-3">
+            When you click an affiliate link and visit Amazon, Amazon may place cookies on your device to track purchases for commission purposes. This tracking is governed by <strong class="text-ink">Amazon's own Privacy Policy</strong>, not ours. We have no access to or control over Amazon's cookies or the data they collect.
+          </p>
+          <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+            Our geo-routing system reads your country from Vercel's edge network (based on IP) to redirect you to the appropriate Amazon storefront. We do not store or log your IP address in connection with this routing — the detection happens transiently at the network edge and is not retained by us.
+          </p>
+        </div>
+      </section>
+
+      <!-- 4 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">04</span>
+          Sharing of Information
+        </h2>
+        <div class="pl-8 border-l border-ink/8">
+          <p class="font-mono text-[12px] text-steel/75 leading-relaxed mb-3">
+            We do not sell, trade, or rent your personal information. We may share information with third parties only in the following limited circumstances:
+          </p>
+          <ul class="flex flex-col gap-2">
+            {[
+              { label: "Service Providers", body: "We use Vercel (hosting & edge functions) and Sanity.io (content management). These providers process data on our behalf under their own privacy policies and data processing agreements." },
+              { label: "Analytics", body: "We use Google Analytics (or a privacy-first alternative such as Vercel Analytics) to understand site traffic. Aggregated, anonymised data is shared with these services. No personally identifiable information is intentionally sent." },
+              { label: "Legal Compliance", body: "We may disclose information if required by law, court order, or government authority, or if we believe in good faith that disclosure is necessary to protect our rights, your safety, or the safety of others." },
+              { label: "Business Transfer", body: "If TheBudgetAesthetic is sold or merged, user information may be transferred to the new owner subject to this Privacy Policy." },
+            ].map(({ label, body }) => (
+              <li class="flex flex-col gap-1">
+                <span class="font-display font-bold text-[13px] text-ink">{label}</span>
+                <p class="font-mono text-[12px] text-steel/70 leading-relaxed">{body}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <!-- 5 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">05</span>
+          Google Services & Third-Party Tools
+        </h2>
+        <div class="pl-8 border-l border-ink/8 flex flex-col gap-4">
+          <div>
+            <h3 class="font-display font-bold text-[14px] text-ink mb-1.5">Google Analytics</h3>
+            <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+              We use Google Analytics to measure site traffic and reader behaviour (e.g., page views, session duration, bounce rate). Google Analytics places cookies on your device and transmits data to Google's servers in the United States. We have enabled IP anonymisation so your full IP address is never stored. You can opt out of Google Analytics tracking by installing the <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" class="text-accent underline underline-offset-2">Google Analytics Opt-out Browser Add-on</a>.
+            </p>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-[14px] text-ink mb-1.5">Google Fonts</h3>
+            <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+              This site loads fonts (Syne, DM Mono, Instrument Serif) from Google Fonts. When your browser requests a font file, Google may log your IP address as part of normal server request logging. See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-accent underline underline-offset-2">Google's Privacy Policy</a> for details.
+            </p>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-[14px] text-ink mb-1.5">Sanity.io (Content CMS)</h3>
+            <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+              Blog content is served from Sanity.io's CDN. Sanity may log standard request data (IP, user agent) as part of CDN operations. Sanity is GDPR-compliant. See <a href="https://www.sanity.io/legal/privacy" target="_blank" rel="noopener noreferrer" class="text-accent underline underline-offset-2">Sanity's Privacy Policy</a>.
+            </p>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-[14px] text-ink mb-1.5">Vercel (Hosting)</h3>
+            <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+              The site is hosted on Vercel's infrastructure. Vercel processes request metadata (IP address, user agent, request path) for security, abuse prevention, and analytics. See <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" class="text-accent underline underline-offset-2">Vercel's Privacy Policy</a>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">06</span>
+          Your Rights & Choices
+        </h2>
+        <div class="pl-8 border-l border-ink/8">
+          <p class="font-mono text-[12px] text-steel/75 leading-relaxed mb-3">
+            Depending on your jurisdiction, you may have the following rights regarding your personal data:
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { right: "Access", desc: "Request a copy of the personal data we hold about you." },
+              { right: "Correction", desc: "Ask us to correct inaccurate or incomplete data." },
+              { right: "Deletion", desc: "Request deletion of your personal data ("right to be forgotten")." },
+              { right: "Portability", desc: "Receive your data in a structured, machine-readable format." },
+              { right: "Objection", desc: "Object to processing of your data for certain purposes." },
+              { right: "Opt-out of cookies", desc: "Use your browser settings to block or delete cookies at any time." },
+            ].map(({ right, desc }) => (
+              <div class="glass rounded-xl p-4">
+                <p class="font-display font-bold text-[13px] text-ink mb-1">{right}</p>
+                <p class="font-mono text-[11px] text-steel/65 leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+          <p class="font-mono text-[12px] text-steel/65 leading-relaxed mt-4">
+            To exercise any of these rights, email us at <a href={`mailto:${contactEmail}`} class="text-accent underline underline-offset-2">{contactEmail}</a>. We will respond within 30 days. For GDPR requests, we may ask you to verify your identity before processing.
+          </p>
+        </div>
+      </section>
+
+      <!-- 7 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">07</span>
+          Data Retention
+        </h2>
+        <div class="pl-8 border-l border-ink/8">
+          <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+            We retain data only for as long as necessary to fulfil the purposes described in this policy or as required by law. Analytics data is retained for 14 months in Google Analytics (our configured retention period). Email correspondence is retained for up to 2 years. The <code class="bg-ink/6 px-1 rounded text-[11px]">tba_region</code> geo cookie expires after 24 hours.
+          </p>
+        </div>
+      </section>
+
+      <!-- 8 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">08</span>
+          Children's Privacy
+        </h2>
+        <div class="pl-8 border-l border-ink/8">
+          <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+            This website is not directed at children under the age of 13 (or 16 in the EU/UK). We do not knowingly collect personal information from children. If you believe a child has provided us with personal data, please contact us and we will delete it promptly.
+          </p>
+        </div>
+      </section>
+
+      <!-- 9 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">09</span>
+          International Data Transfers
+        </h2>
+        <div class="pl-8 border-l border-ink/8">
+          <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+            {siteName} is operated from India. Our hosting (Vercel) and analytics (Google) infrastructure is located in the United States and other countries. If you are located in the European Economic Area (EEA) or the UK, your data may be transferred to and processed in countries that do not provide the same level of data protection as your home country. By using this site, you consent to such transfers. Where required, our service providers rely on Standard Contractual Clauses or other approved transfer mechanisms under applicable data protection law.
+          </p>
+        </div>
+      </section>
+
+      <!-- 10 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">10</span>
+          Security
+        </h2>
+        <div class="pl-8 border-l border-ink/8">
+          <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+            We take reasonable technical and organisational measures to protect your information against unauthorised access, alteration, disclosure, or destruction. These include HTTPS encryption, security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy), and access controls on our CMS. However, no internet transmission is 100% secure and we cannot guarantee absolute security.
+          </p>
+        </div>
+      </section>
+
+      <!-- 11 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">11</span>
+          Changes to This Policy
+        </h2>
+        <div class="pl-8 border-l border-ink/8">
+          <p class="font-mono text-[12px] text-steel/75 leading-relaxed">
+            We may update this Privacy Policy from time to time to reflect changes in our practices, technology, or legal requirements. When we do, we will update the "Last updated" date at the top of this page. We encourage you to review this policy periodically. Your continued use of the site after changes are posted constitutes your acceptance of the updated policy.
+          </p>
+        </div>
+      </section>
+
+      <!-- 12 — Contact -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">12</span>
+          Contact Us
+        </h2>
+        <div class="pl-8 border-l border-ink/8">
+          <p class="font-mono text-[12px] text-steel/75 leading-relaxed mb-4">
+            If you have questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
+          </p>
+          <div class="glass rounded-xl p-5 flex flex-col gap-2">
+            <p class="font-display font-bold text-sm text-ink">{siteName}</p>
+            {contactEmail ? (
+              <a href={`mailto:${contactEmail}`} class="font-mono text-[12px] text-accent underline underline-offset-2 flex items-center gap-1.5">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                {contactEmail}
+              </a>
+            ) : (
+              <p class="font-mono text-[12px] text-dim">Contact details coming soon.</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Footer note -->
+    <div class="mt-14 pt-8 border-t border-ink/8 animate-fade-up">
+      <p class="font-mono text-[11px] text-dim leading-relaxed text-center">
+        This policy was last reviewed on {lastUpdated}. It applies to the website at {siteUrl} and any subdomains operated by {siteName}.
+      </p>
+      <div class="flex justify-center gap-4 mt-5">
+        <a href="/disclosure" class="font-mono text-[10px] uppercase tracking-widest text-steel/60 hover:text-ink transition-colors flex items-center gap-1">
+          <span class="text-accent">→</span> Affiliate Disclosure
+        </a>
+        <a href="/contact" class="font-mono text-[10px] uppercase tracking-widest text-steel/60 hover:text-ink transition-colors flex items-center gap-1">
+          <span class="text-accent">→</span> Contact Us
+        </a>
+      </div>
+    </div>
+
+  </div>
+</BaseLayout>

@@ -1,0 +1,146 @@
+---
+import Navbar from "../components/Navbar.astro";
+import "../styles/global.css";
+
+interface Props {
+  title:       string;
+  description: string;
+  ogImage?:    string;
+  ogType?:     "website" | "article";
+  publishedAt?: string;
+  currentPath?: string;
+  noIndex?:    boolean;
+}
+
+const {
+  title,
+  description,
+  ogImage = "/og-default.jpg",
+  ogType  = "website",
+  publishedAt,
+  currentPath = Astro.url.pathname,
+  noIndex = false,
+} = Astro.props;
+
+const siteName = "TheBudgetAesthetic";
+const siteUrl  = import.meta.env.PUBLIC_SITE_URL || "https://www.thebudgetaesthetic.com";
+const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
+---
+
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#F7F5F0" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="sitemap" href="/sitemap.xml" />
+
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  {noIndex && <meta name="robots" content="noindex,nofollow" />}
+  <link rel="canonical" href={`${siteUrl}${currentPath}`} />
+
+  <meta property="og:type"        content={ogType} />
+  <meta property="og:url"         content={`${siteUrl}${currentPath}`} />
+  <meta property="og:title"       content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image"       content={ogImage.startsWith("http") ? ogImage : `${siteUrl}${ogImage}`} />
+  <meta property="og:site_name"   content={siteName} />
+  {publishedAt && <meta property="article:published_time" content={publishedAt} />}
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content={fullTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image"       content={ogImage.startsWith("http") ? ogImage : `${siteUrl}${ogImage}`} />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.sanity.io" />
+
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type":    "WebSite",
+    "name":     siteName,
+    "url":      siteUrl,
+    "description": "Budget-friendly tech setups, desk builds, and home room decor — curated with an aesthetic eye.",
+  })} />
+</head>
+<body class="min-h-screen flex flex-col">
+  <Navbar currentPath={currentPath} />
+
+  <main class="flex-1 pt-[62px]">
+    <slot />
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-24 border-t border-ink/8">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
+
+      <!-- Brand column -->
+      <div class="md:col-span-2 flex flex-col gap-4">
+        <div class="flex items-center gap-2.5">
+          <svg width="28" height="28" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="10" width="28" height="20" rx="3" stroke="#0F0F0F" stroke-width="1.8" fill="none"/>
+            <path d="M10 30L10 38M24 30L24 38M6 38L28 38" stroke="#0F0F0F" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="17" cy="20" r="2.5" fill="#C8A96A"/>
+            <path d="M6 20L14 20M20 20L28 20M17 12L17 17" stroke="#C8A96A" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M17 10C17 5 13 4 11 7" stroke="#7DD3C8" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+            <path d="M17 10C17 5 21 4 23 7" stroke="#7DD3C8" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          </svg>
+          <div class="flex flex-col leading-none">
+            <span class="font-display font-bold text-sm text-ink">TheBudget</span>
+            <span class="font-display font-bold text-sm text-accent">Aesthetic</span>
+          </div>
+        </div>
+        <p class="font-mono text-[12px] text-steel/70 leading-relaxed max-w-xs">
+          Curated tech picks, desk setups & room decor — beautiful gear that doesn't destroy your budget.
+        </p>
+        
+      </div>
+
+      <!-- Explore -->
+      <div>
+        <p class="font-mono text-[10px] uppercase tracking-widest text-dim mb-4">Explore</p>
+        <ul class="flex flex-col gap-2.5">
+          {[
+            ["Tech Picks",  "/category/tech-picks" ],
+            ["Desk Setups", "/category/desk-setups"],
+            ["Room Decor",  "/category/room-decor" ],
+            ["All Posts",   "/blog"                ],
+          ].map(([label, href]) => (
+            <li>
+              <a href={href} class="font-mono text-[12px] text-steel/70 hover:text-ink transition-colors flex items-center gap-1.5">
+                <span class="text-accent text-[10px]">→</span>{label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Legal -->
+      <div>
+        <p class="font-mono text-[10px] uppercase tracking-widest text-dim mb-4">Info</p>
+        <ul class="flex flex-col gap-2.5">
+          {[
+            ["Privacy Policy",       "/privacy"   ],
+            ["Affiliate Disclosure", "/disclosure"],
+          ].map(([label, href]) => (
+            <li>
+              <a href={href} class="font-mono text-[12px] text-steel/70 hover:text-ink transition-colors flex items-center gap-1.5">
+                <span class="text-accent text-[10px]">→</span>{label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-ink/6 py-5">
+      <p class="text-center font-mono text-[10px] text-dim tracking-wide">
+        © {new Date().getFullYear()} TheBudgetAesthetic ·
+        <span class="italic">Amazon Associate · Qualifying purchases earn a commission at no extra cost to you</span>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
