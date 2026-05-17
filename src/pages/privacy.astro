@@ -13,6 +13,7 @@ const contactEmail = ""; // add your email here when ready
 >
   <div class="max-w-3xl mx-auto px-5 sm:px-8 py-16">
 
+    <!-- Page header -->
     <div class="mb-12 animate-fade-up">
       <div class="flex items-center gap-2 mb-4">
         <span class="w-5 h-px bg-accent"></span>
@@ -24,14 +25,17 @@ const contactEmail = ""; // add your email here when ready
       </p>
     </div>
 
+    <!-- Intro card -->
     <div class="glass rounded-2xl p-6 mb-10 animate-fade-up animation-delay-100">
       <p class="font-mono text-[12px] text-steel/80 leading-relaxed">
-        This Privacy Policy describes how <strong class="text-ink font-semibold">{siteName}</strong> ("{siteUrl}") collects, uses, and shares information about you when you visit our website. By using this site, you agree to the practices described below. If you do not agree, please do not use the site.
+        This Privacy Policy describes how <strong class="text-ink font-semibold">{siteName}</strong> (&quot;{siteUrl}&quot;) collects, uses, and shares information about you when you visit our website. By using this site, you agree to the practices described below. If you do not agree, please do not use the site.
       </p>
     </div>
 
+    <!-- Policy sections -->
     <div class="flex flex-col gap-10 animate-fade-up animation-delay-200">
 
+      <!-- 1 -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">01</span>
@@ -52,19 +56,17 @@ const contactEmail = ""; // add your email here when ready
               When you visit {siteName}, we and our third-party service providers may automatically collect certain information, including:
             </p>
             <ul class="flex flex-col gap-1.5">
-              {
-                [
-                  "IP address and approximate geographic location (country/region)",
-                  "Browser type and version, operating system, and device type",
-                  "Pages visited, time spent on each page, and referring URL",
-                  "Date and time of your visit",
-                  "Clicks on affiliate links (logged by Amazon's systems, not ours)",
-                ].map(item => (
-                  <li class="flex items-start gap-2 font-mono text-[12px] text-steel/75">
-                    <span class="text-accent mt-0.5 shrink-0">→</span>{item}
-                  </li>
-                ))
-              }
+              {[
+                "IP address and approximate geographic location (country/region)",
+                "Browser type and version, operating system, and device type",
+                "Pages visited, time spent on each page, and referring URL",
+                "Date and time of your visit",
+                "Clicks on affiliate links (logged by Amazon's systems, not ours)",
+              ].map(item => (
+                <li class="flex items-start gap-2 font-mono text-[12px] text-steel/75">
+                  <span class="text-accent mt-0.5 shrink-0">→</span>{item}
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -77,6 +79,7 @@ const contactEmail = ""; // add your email here when ready
         </div>
       </section>
 
+      <!-- 2 -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">02</span>
@@ -87,20 +90,18 @@ const contactEmail = ""; // add your email here when ready
             We use the information we collect for the following purposes:
           </p>
           <ul class="flex flex-col gap-2">
-            {
-              [
-                "To operate and maintain the website and ensure it functions correctly",
-                "To analyse traffic patterns and understand which content is most useful to readers",
-                "To route affiliate links to the correct Amazon regional storefront (India vs. Global) using geo-detection",
-                "To detect, prevent, and address technical issues or security threats",
-                "To respond to your direct communications (e.g., emails sent to us)",
-                "To comply with legal obligations",
-              ].map(item => (
-                <li class="flex items-start gap-2 font-mono text-[12px] text-steel/75">
-                  <span class="text-glow mt-0.5 shrink-0">✓</span>{item}
-                </li>
-              ))
-            }
+            {[
+              "To operate and maintain the website and ensure it functions correctly",
+              "To analyse traffic patterns and understand which content is most useful to readers",
+              "To route affiliate links to the correct Amazon regional storefront (India vs. Global) using geo-detection",
+              "To detect, prevent, and address technical issues or security threats",
+              "To respond to your direct communications (e.g., emails sent to us)",
+              "To comply with legal obligations",
+            ].map(item => (
+              <li class="flex items-start gap-2 font-mono text-[12px] text-steel/75">
+                <span class="text-glow mt-0.5 shrink-0">✓</span>{item}
+              </li>
+            ))}
           </ul>
           <p class="font-mono text-[12px] text-steel/60 leading-relaxed mt-4 italic">
             We do not sell your personal information to third parties. We do not use your data for behavioural advertising on this site.
@@ -108,6 +109,7 @@ const contactEmail = ""; // add your email here when ready
         </div>
       </section>
 
+      <!-- 3 -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">03</span>
@@ -128,6 +130,7 @@ const contactEmail = ""; // add your email here when ready
         </div>
       </section>
 
+      <!-- 4 -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">04</span>
@@ -138,23 +141,22 @@ const contactEmail = ""; // add your email here when ready
             We do not sell, trade, or rent your personal information. We may share information with third parties only in the following limited circumstances:
           </p>
           <ul class="flex flex-col gap-2">
-            {
-              [
-                { label: "Service Providers", body: "We use Vercel (hosting & edge functions) and Sanity.io (content management). These providers process data on our behalf under their own privacy policies and data processing agreements." },
-                { label: "Analytics", body: "We use Google Analytics (or a privacy-first alternative such as Vercel Analytics) to understand site traffic. Aggregated, anonymised data is shared with these services. No personally identifiable information is intentionally sent." },
-                { label: "Legal Compliance", body: "We may disclose information if required by law, court order, or government authority, or if we believe in good faith that disclosure is necessary to protect our rights, your safety, or the safety of others." },
-                { label: "Business Transfer", body: "If TheBudgetAesthetic is sold or merged, user information may be transferred to the new owner subject to this Privacy Policy." },
-              ].map(({ label, body }) => (
-                <li class="flex flex-col gap-1">
-                  <span class="font-display font-bold text-[13px] text-ink">{label}</span>
-                  <p class="font-mono text-[12px] text-steel/70 leading-relaxed">{body}</p>
-                </li>
-              ))
-            }
+            {[
+              { label: "Service Providers", body: "We use Vercel (hosting & edge functions) and Sanity.io (content management). These providers process data on our behalf under their own privacy policies and data processing agreements." },
+              { label: "Analytics", body: "We use Google Analytics (or a privacy-first alternative such as Vercel Analytics) to understand site traffic. Aggregated, anonymised data is shared with these services. No personally identifiable information is intentionally sent." },
+              { label: "Legal Compliance", body: "We may disclose information if required by law, court order, or government authority, or if we believe in good faith that disclosure is necessary to protect our rights, your safety, or the safety of others." },
+              { label: "Business Transfer", body: "If TheBudgetAesthetic is sold or merged, user information may be transferred to the new owner subject to this Privacy Policy." },
+            ].map(({ label, body }) => (
+              <li class="flex flex-col gap-1">
+                <span class="font-display font-bold text-[13px] text-ink">{label}</span>
+                <p class="font-mono text-[12px] text-steel/70 leading-relaxed">{body}</p>
+              </li>
+            ))}
           </ul>
         </div>
       </section>
 
+      <!-- 5 -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">05</span>
@@ -188,6 +190,7 @@ const contactEmail = ""; // add your email here when ready
         </div>
       </section>
 
+      <!-- 6 -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">06</span>
@@ -198,21 +201,19 @@ const contactEmail = ""; // add your email here when ready
             Depending on your jurisdiction, you may have the following rights regarding your personal data:
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {
-              [
-                { right: "Access", desc: "Request a copy of the personal data we hold about you." },
-                { right: "Correction", desc: "Ask us to correct inaccurate or incomplete data." },
-                { right: "Deletion", desc: "Request deletion of your personal data (right to be forgotten)." },
-                { right: "Portability", desc: "Receive your data in a structured, machine-readable format." },
-                { right: "Objection", desc: "Object to processing of your data for certain purposes." },
-                { right: "Opt-out of cookies", desc: "Use your browser settings to block or delete cookies at any time." },
-              ].map(({ right, desc }) => (
-                <div class="glass rounded-xl p-4">
-                  <p class="font-display font-bold text-[13px] text-ink mb-1">{right}</p>
-                  <p class="font-mono text-[11px] text-steel/65 leading-relaxed">{desc}</p>
-                </div>
-              ))
-            }
+            {[
+              { right: "Access", desc: "Request a copy of the personal data we hold about you." },
+              { right: "Correction", desc: "Ask us to correct inaccurate or incomplete data." },
+              { right: "Deletion", desc: "Request deletion of your personal data ("right to be forgotten")." },
+              { right: "Portability", desc: "Receive your data in a structured, machine-readable format." },
+              { right: "Objection", desc: "Object to processing of your data for certain purposes." },
+              { right: "Opt-out of cookies", desc: "Use your browser settings to block or delete cookies at any time." },
+            ].map(({ right, desc }) => (
+              <div class="glass rounded-xl p-4">
+                <p class="font-display font-bold text-[13px] text-ink mb-1">{right}</p>
+                <p class="font-mono text-[11px] text-steel/65 leading-relaxed">{desc}</p>
+              </div>
+            ))}
           </div>
           <p class="font-mono text-[12px] text-steel/65 leading-relaxed mt-4">
             To exercise any of these rights, email us at <a href={`mailto:${contactEmail}`} class="text-accent underline underline-offset-2">{contactEmail}</a>. We will respond within 30 days. For GDPR requests, we may ask you to verify your identity before processing.
@@ -220,6 +221,7 @@ const contactEmail = ""; // add your email here when ready
         </div>
       </section>
 
+      <!-- 7 -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">07</span>
@@ -232,6 +234,7 @@ const contactEmail = ""; // add your email here when ready
         </div>
       </section>
 
+      <!-- 8 -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">08</span>
@@ -244,6 +247,7 @@ const contactEmail = ""; // add your email here when ready
         </div>
       </section>
 
+      <!-- 9 -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">09</span>
@@ -256,6 +260,7 @@ const contactEmail = ""; // add your email here when ready
         </div>
       </section>
 
+      <!-- 10 -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">10</span>
@@ -268,6 +273,7 @@ const contactEmail = ""; // add your email here when ready
         </div>
       </section>
 
+      <!-- 11 -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">11</span>
@@ -280,6 +286,7 @@ const contactEmail = ""; // add your email here when ready
         </div>
       </section>
 
+      <!-- 12 — Contact -->
       <section>
         <h2 class="font-display text-xl font-bold text-ink mb-4 flex items-center gap-3">
           <span class="font-mono text-[11px] text-accent font-medium">12</span>
@@ -305,6 +312,7 @@ const contactEmail = ""; // add your email here when ready
 
     </div>
 
+    <!-- Footer note -->
     <div class="mt-14 pt-8 border-t border-ink/8 animate-fade-up">
       <p class="font-mono text-[11px] text-dim leading-relaxed text-center">
         This policy was last reviewed on {lastUpdated}. It applies to the website at {siteUrl} and any subdomains operated by {siteName}.
@@ -312,6 +320,9 @@ const contactEmail = ""; // add your email here when ready
       <div class="flex justify-center gap-4 mt-5">
         <a href="/disclosure" class="font-mono text-[10px] uppercase tracking-widest text-steel/60 hover:text-ink transition-colors flex items-center gap-1">
           <span class="text-accent">→</span> Affiliate Disclosure
+        </a>
+        <a href="/contact" class="font-mono text-[10px] uppercase tracking-widest text-steel/60 hover:text-ink transition-colors flex items-center gap-1">
+          <span class="text-accent">→</span> Contact Us
         </a>
       </div>
     </div>
