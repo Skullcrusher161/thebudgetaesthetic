@@ -7,11 +7,13 @@ export default defineConfig({
   adapter: vercel({
     edgeMiddleware: true,
     webAnalytics: { enabled: true },
+    isr: false,
   }),
   integrations: [
     tailwind({ applyBaseStyles: false }),
   ],
   image: {
+    service: { entrypoint: 'astro/assets/services/noop' },
     domains: ["cdn.sanity.io"],
     remotePatterns: [
       { protocol: "https", hostname: "cdn.sanity.io" },
@@ -21,9 +23,10 @@ export default defineConfig({
   vite: {
     ssr: {
       external: ["sharp"],
+      noExternal: [],
     },
     optimizeDeps: {
-      exclude: ["@sanity/client"],
+      exclude: ["@sanity/client", "sharp"],
     },
   },
 });
