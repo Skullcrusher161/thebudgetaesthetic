@@ -8,6 +8,7 @@ export default defineConfig({
     edgeMiddleware: true,
     webAnalytics: { enabled: true },
     isr: false,
+    nodeVersion: "20",
   }),
   integrations: [
     tailwind({ applyBaseStyles: false }),
