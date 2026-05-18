@@ -1,5 +1,6 @@
 ---
 import Navbar from "../components/Navbar.astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
 import "../styles/global.css";
 
 interface Props {
@@ -142,5 +143,6 @@ const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
       </p>
     </div>
   </footer>
+  <SpeedInsights />
 </body>
 </html>
