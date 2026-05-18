@@ -7,16 +7,20 @@ export default defineConfig({
   adapter: vercel({
     edgeMiddleware: true,
     webAnalytics: { enabled: true },
+    imageService: false,
   }),
   integrations: [
     tailwind({ applyBaseStyles: false }),
   ],
-  vite: {
-    optimizeDeps: {
-      exclude: ["@sanity/client", "sharp"],
+  image: {
+    service: {
+      entrypoint: "astro/assets/services/noop",
     },
+  },
+  vite: {
     ssr: {
       external: ["sharp"],
+      noExternal: [],
     },
     build: {
       rollupOptions: {
