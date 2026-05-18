@@ -20,7 +20,11 @@ export default defineConfig({
   },
   vite: {
     ssr: {
-      external: ["@sanity/client"],
+      external: ["@sanity/client", "sharp"],
+      noExternal: [],
+    },
+    optimizeDeps: {
+      exclude: ["sharp"],
     },
   },
 });
