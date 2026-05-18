@@ -1,19 +1,25 @@
 import { defineConfig } from "astro/config";
 import tailwind from "@astrojs/tailwind";
 import vercel from "@astrojs/vercel/serverless";
+import sanity from "@sanity/astro";
 
 export default defineConfig({
   output: "server",
   adapter: vercel({
-    edgeMiddleware: true,
+    edgeMiddleware: true,   // Enables Edge Middleware for geo-routing
     webAnalytics: { enabled: true },
-    isr: false,
   }),
   integrations: [
     tailwind({ applyBaseStyles: false }),
+    sanity({
+      projectId: process.env.PUBLIC_SANITY_PROJECT_ID,
+      dataset: process.env.PUBLIC_SANITY_DATASET || "production",
+      useCdn: import.meta.env.PROD,
+      apiVersion: "2024-01-01",
+      studioBasePath: "/studio",  // Embedded Sanity Studio at /studio
+    }),
   ],
   image: {
-    service: { entrypoint: 'astro/assets/services/noop' },
     domains: ["cdn.sanity.io"],
     remotePatterns: [
       { protocol: "https", hostname: "cdn.sanity.io" },
@@ -21,12 +27,8 @@ export default defineConfig({
     ],
   },
   vite: {
-    ssr: {
-      external: ["sharp"],
-      noExternal: [],
-    },
     optimizeDeps: {
-      exclude: ["@sanity/client", "sharp"],
+      exclude: ["@sanity/client"],
     },
   },
 });
