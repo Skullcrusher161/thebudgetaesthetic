@@ -18,12 +18,11 @@ export default defineConfig({
   },
   vite: {
     ssr: {
-      external: ["sharp"],
-      noExternal: [],
+      external: ["sharp", "sanity"],
     },
     build: {
       rollupOptions: {
-        external: ["sharp"],
+        external: ["sharp", "sanity"],
       },
     },
   },

@@ -2,19 +2,22 @@
   "name": "thebudgetaesthetic",
   "version": "1.0.0",
   "description": "TheBudgetAesthetic - Affiliate Marketing Blog",
+  "type": "module",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "sanity": "cd sanity && sanity start",
+    "sanity:deploy": "cd sanity && sanity deploy",
+    "sanity:manage": "cd sanity && sanity manage"
   },
   "dependencies": {
     "@astrojs/tailwind": "^5.1.0",
     "@astrojs/vercel": "^7.8.0",
+    "@portabletext/react": "^3.1.0",
     "@sanity/client": "^6.22.0",
     "@sanity/image-url": "^1.1.0",
-    "@vercel/analytics": "^2.0.1",
-    "@vercel/speed-insights": "^2.0.0",
     "astro": "^4.16.0"
   },
   "devDependencies": {
