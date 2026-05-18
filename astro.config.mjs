@@ -11,13 +11,6 @@ export default defineConfig({
   integrations: [
     tailwind({ applyBaseStyles: false }),
   ],
-  image: {
-    domains: ["cdn.sanity.io"],
-    remotePatterns: [
-      { protocol: "https", hostname: "cdn.sanity.io" },
-      { protocol: "https", hostname: "images.unsplash.com" },
-    ],
-  },
   vite: {
     optimizeDeps: {
       exclude: ["@sanity/client", "sharp"],
