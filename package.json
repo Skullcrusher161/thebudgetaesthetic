@@ -7,22 +7,25 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro",
-    "sanity": "cd sanity && sanity start",
-    "sanity:deploy": "cd sanity && sanity deploy",
-    "sanity:manage": "cd sanity && sanity manage"
+    "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/react": "^3.6.0",
     "@astrojs/tailwind": "^5.1.0",
     "@astrojs/vercel": "^7.8.0",
-    "@portabletext/react": "^3.1.0",
     "@sanity/client": "^6.22.0",
     "@sanity/image-url": "^1.1.0",
-    "@vercel/speed-insights": "^1.0.0",
-    "astro": "^4.16.0"
+    "@sanity/vision": "^3.62.0",
+    "astro": "^4.16.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "sanity": "^3.62.0",
+    "styled-components": "^6.1.0"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14"
