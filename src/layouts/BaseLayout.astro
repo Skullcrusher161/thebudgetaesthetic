@@ -23,7 +23,7 @@ const {
 } = Astro.props;
 
 const siteName = "TheBudgetAesthetic";
-const siteUrl  = import.meta.env.PUBLIC_SITE_URL || "https://www.thebudgetaesthetic.com";
+const siteUrl  = import.meta.env.PUBLIC_SITE_URL || "https://thebudgetaesthetic.vercel.app";
 const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
 ---
 
@@ -142,6 +142,5 @@ const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
       </p>
     </div>
   </footer>
-  <SpeedInsights />
 </body>
 </html>
