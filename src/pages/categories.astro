@@ -42,7 +42,7 @@ const categoryMeta: Record<string, { emoji: string; subtitle: string; tag: strin
 
     {categories.length > 0 ? (
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {c{categories.map((category: any, i: number) => {
+        {categories.map((category: any, i: number) => {
           const meta = categoryMeta[category.slug.current] ?? {
             emoji: category.emoji ?? "📁",
             subtitle: category.description ?? "",
@@ -50,7 +50,7 @@ const categoryMeta: Record<string, { emoji: string; subtitle: string; tag: strin
           };
           const href = "/category/" + category.slug.current;
           return (
-            
+            <a
               href={href}
               class="group glass rounded-3xl p-7 flex flex-col gap-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover animate-fade-up"
               style={"animation-delay: " + (i * 80) + "ms"}
