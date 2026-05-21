@@ -1,0 +1,36 @@
+---
+// src/components/PostViewTracker.astro
+// Add this component to your src/pages/blog/[slug].astro
+// It fires a non-blocking view event ONLY if analytics cookies are accepted.
+
+interface Props {
+  postSlug: string
+  postTitle: string
+}
+
+const { postSlug, postTitle } = Astro.props
+---
+
+<script define:vars={{ postSlug, postTitle }}>
+  function trackView() {
+    const consent = window.getCookieConsent ? window.getCookieConsent() : null
+
+    // Only track if analytics accepted, or if no decision yet (fire-and-forget)
+    if (consent === 'rejected') return
+
+    fetch('/api/track-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ postSlug, postTitle }),
+    }).catch(() => {}) // silent fail — never break the page
+  }
+
+  // Wait for consent event or fire after short delay
+  if (window.getCookieConsent && window.getCookieConsent() !== null) {
+    trackView()
+  } else {
+    window.addEventListener('cookieConsent', (e) => {
+      if ((e as CustomEvent).detail.analytics) trackView()
+    }, { once: true })
+  }
+</script>

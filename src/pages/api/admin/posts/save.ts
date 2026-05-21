@@ -43,7 +43,6 @@ export const POST: APIRoute = async ({ request }) => {
       coverImageAsset = {
         _type: 'image',
         asset: { _type: 'reference', _ref: asset._id },
-        alt: title,
       }
     }
 
@@ -52,20 +51,19 @@ export const POST: APIRoute = async ({ request }) => {
       _type: 'post',
       title,
       slug: { _type: 'slug', current: slug },
-      content,
+      // Store HTML content as a simple text field
+      // (your existing post schema may use body/content — adjust field name if needed)
+      body: content,
       excerpt,
       published,
-      publishedAt: new Date().toISOString(),
     }
 
     if (categoryId) {
-      postDoc.categories = [
-        { _type: 'reference', _ref: categoryId, _key: categoryId },
-      ]
+      postDoc.category = { _type: 'reference', _ref: categoryId }
     }
 
     if (coverImageAsset) {
-      postDoc.heroImage = coverImageAsset
+      postDoc.coverImage = coverImageAsset
     }
 
     const created = await sanity.create(postDoc)

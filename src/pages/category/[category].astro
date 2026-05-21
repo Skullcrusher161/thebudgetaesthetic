@@ -5,17 +5,32 @@ const { category } = Astro.params;
 if (!category) return Astro.redirect("/blog");
 
 let posts = [];
+let categoryMeta = null;
 try {
-  const { sanityClient, POSTS_BY_CATEGORY_QUERY } = await import("../../lib/sanity.js");
-  posts = await sanityClient.fetch(POSTS_BY_CATEGORY_QUERY, { category });
-} catch {}
+  const { sanityClient, CATEGORY_BY_SLUG_QUERY, POSTS_BY_CATEGORY_QUERY } = await import("../../lib/sanity.js");
+  [categoryMeta, posts] = await Promise.all([
+    sanityClient.fetch(CATEGORY_BY_SLUG_QUERY, { slug: category }),
+    sanityClient.fetch(POSTS_BY_CATEGORY_QUERY, { category }),
+  ]);
+} catch {
+  categoryMeta = null;
+}
 
-const labels = {
-  "tech-picks":  { label: "Tech Picks",  tag: "GADGETS & GEAR", tagClass: "tag-tech",  icon: "🖥️",  desc: "Monitors, keyboards, audio, cameras — best budget tech that actually looks good." },
-  "desk-setups": { label: "Desk Setups", tag: "WORKSPACES",     tagClass: "tag-setup", icon: "🗂️",  desc: "Complete desk build guides, cable management, and monitor setups." },
-  "room-decor":  { label: "Room Decor",  tag: "INTERIORS",      tagClass: "tag-decor", icon: "🏡",  desc: "Aesthetic room makeovers, wall art, lighting, plants, and furniture on a budget." },
-};
-const meta = labels[category] || { label: category.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()), tag: "POSTS", tagClass: "tag-setup", icon: "📂", desc: "" };
+const meta = categoryMeta
+  ? {
+      label: categoryMeta.title,
+      tag: categoryMeta.title.toUpperCase(),
+      tagClass: "tag-setup",
+      icon: categoryMeta.emoji || "📂",
+      desc: categoryMeta.description || "",
+    }
+  : {
+      label: category.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+      tag: "POSTS",
+      tagClass: "tag-setup",
+      icon: "📂",
+      desc: "",
+    };
 ---
 
 <BaseLayout
@@ -41,7 +56,7 @@ const meta = labels[category] || { label: category.replace(/-/g, " ").replace(/\
 
     {posts.length > 0 ? (
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {posts.map((post, i) => (
+        {posts.map((post: any, i: number) => (
           <a
             href={`/blog/${post.slug.current}`}
             class="group glass rounded-2xl overflow-hidden card-shadow flex flex-col animate-fade-up"

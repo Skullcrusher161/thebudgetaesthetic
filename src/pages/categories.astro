@@ -1,0 +1,93 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { sanityClient, ALL_CATEGORIES_QUERY } from "../lib/sanity.js";
+
+const categories = await sanityClient.fetch(ALL_CATEGORIES_QUERY);
+
+const categoryMeta: Record<string, { emoji: string; subtitle: string; tag: string }> = {
+  "tech-picks": {
+    emoji: "🖥️",
+    subtitle: "Monitors, keyboards, audio, cameras — the best budget tech that actually looks good.",
+    tag: "GADGETS & GEAR",
+  },
+  "desk-setups": {
+    emoji: "🪑",
+    subtitle: "Complete desk build guides, cable management, lighting, and monitors. Your setup, elevated.",
+    tag: "WORKSPACES",
+  },
+  "room-decor": {
+    emoji: "🛋️",
+    subtitle: "Aesthetic room makeovers, wall art, lighting, plants, and furniture — budget edition.",
+    tag: "INTERIORS",
+  },
+};
+---
+
+<BaseLayout
+  title="Categories"
+  description="Explore TheBudgetAesthetic categories for tech, desk setups, room decor, and more."
+>
+  <div class="max-w-6xl mx-auto px-5 sm:px-8 py-16">
+
+    <!-- Header -->
+    <div class="mb-12 animate-fade-up">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="w-6 h-px bg-accent"></span>
+        <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-steel/60">Browse</span>
+      </div>
+      <h1 class="font-display text-4xl font-bold text-ink">What we cover</h1>
+      <p class="font-mono text-[13px] text-steel/70 max-w-2xl mt-4">
+        Curated posts across tech, setups, and decor — hand-researched so you don't waste money on gear that looks good in photos but fails in real life.
+      </p>
+    </div>
+
+    {categories.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {categories.map((category: any, i: number) => {
+          const meta = categoryMeta[category.slug.current] ?? {
+            emoji: category.emoji ?? "📁",
+            subtitle: category.description ?? "",
+            tag: "CATEGORY",
+          };
+          return (
+            
+              href={`/category/${category.slug.current}`}
+              class="group glass rounded-3xl p-7 flex flex-col gap-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover animate-fade-up"
+              style={`animation-delay: ${i * 80}ms`}
+            >
+              <!-- Icon + tag -->
+              <div class="flex items-start justify-between">
+                <span class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent/10 text-3xl">
+                  {meta.emoji}
+                </span>
+                <span class="tag tag-setup">{meta.tag}</span>
+              </div>
+
+              <!-- Title + description -->
+              <div class="flex flex-col gap-2 flex-1">
+                <h2 class="font-display text-xl font-semibold text-ink group-hover:text-accent transition-colors">
+                  {category.title}
+                </h2>
+                <p class="font-mono text-[12px] text-steel/70 leading-relaxed">
+                  {meta.subtitle}
+                </p>
+              </div>
+
+              <!-- CTA -->
+              <div class="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-accent font-medium">
+                Explore
+                <span class="transition-transform group-hover:translate-x-1">→</span>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    ) : (
+      <div class="glass rounded-3xl p-10 text-center">
+        <p class="font-display text-2xl font-semibold text-ink mb-3">No categories yet</p>
+        <p class="font-mono text-[13px] text-steel/70">Check back after categories are added in the Sanity studio.</p>
+      </div>
+    )}
+
+  </div>
+</BaseLayout>

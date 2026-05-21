@@ -30,9 +30,9 @@ const updDate   = post.updatedAt
 // SEO
 const metaTitle = post.seo?.metaTitle       || post.title;
 const metaDesc  = post.seo?.metaDescription || post.excerpt;
-const ogImg     = post.seo?.ogImage
+const ogImg = post.seo?.ogImage
   ? heroImageUrl(post.seo.ogImage, 1200)
-  : heroImg;
+  : undefined;
 
 // JSON-LD — Article schema
 const articleSchema = {
@@ -53,10 +53,30 @@ const articleSchema = {
     "name":  "TheBudgetAesthetic",
     "logo": {
       "@type": "ImageObject",
-      "url":   `${import.meta.env.PUBLIC_SITE_URL}/logo.png`,
+      "url":   `${import.meta.env.PUBLIC_SITE_URL}/logo.svg`,
     },
   },
 };
+
+const contentHtml = post.content ? post.content.map((block: any) => {
+  if (block._type === "block") {
+    const tag = block.style === "h2" ? "h2"
+             : block.style === "h3" ? "h3"
+             : block.style === "blockquote" ? "blockquote"
+             : "p";
+    const text = block.children?.map((child: any) => child.text || "").join("") || "";
+    return `<${tag}>${text}</${tag}>`;
+  }
+
+  if (block._type === "image") {
+    const src = heroImageUrl(block, 800);
+    const alt = block.alt || "";
+    const cap = block.caption || "";
+    return '<figure><img src="' + src + '" alt="' + alt + '" loading="lazy" />' + (cap ? '<figcaption>' + cap + '</figcaption>' : '') + '</figure>';
+  }
+
+  return "";
+}).join("\n") : "";
 ---
 
 <BaseLayout
@@ -97,7 +117,7 @@ const articleSchema = {
       <div class="glass rounded-3xl p-8 animate-fade-up shadow-card">
         <!-- Categories + Meta -->
         <div class="flex flex-wrap items-center gap-3 mb-5">
-          {post.categories?.map(cat => (
+          {post.categories?.map((cat: any) => (
             <a
               href={`/category/${cat.slug.current}`}
               class="badge bg-blush text-mocha hover:bg-gold hover:text-white transition-colors text-[10px] uppercase tracking-widest"
@@ -141,33 +161,13 @@ const articleSchema = {
     </div>
 
     <!-- Portable Text Body -->
-    <div class="prose prose-aesthetic max-w-none portable-text">
-      {post.content ? (
-        <Fragment set:html={
-          // Server-side Portable Text rendering
-          // In production, use @portabletext/to-html or a custom renderer
-          post.content.map(block => {
-            if (block._type === "block") {
-              const tag = block.style === "h2" ? "h2"
-                       : block.style === "h3" ? "h3"
-                       : block.style === "blockquote" ? "blockquote"
-                       : "p";
-              const text = block.children?.map(child => child.text || "").join("") || "";
-              return `<${tag}>${text}</${tag}>`;
-            }
-            if (block._type === "image") {
-              const src = heroImageUrl(block, 800);
-              const alt = block.alt || "";
-              const cap = block.caption || "";
-              return `<figure><img src="${src}" alt="${alt}" loading="lazy" />${cap ? `<figcaption>${cap}</figcaption>` : ""}</figure>`;
-            }
-            return "";
-          }).join("\n")
-        } />
-      ) : (
+    {contentHtml ? (
+      <div class="prose prose-aesthetic max-w-none portable-text" set:html={contentHtml} />
+    ) : (
+      <div class="prose prose-aesthetic max-w-none portable-text">
         <p class="text-charcoal/50 italic">Content coming soon...</p>
-      )}
-    </div>
+      </div>
+    )}
 
     <!-- ── Affiliate Products Section ──────────────────────────────────────── -->
     {post.affiliateProducts && post.affiliateProducts.length > 0 && (
@@ -183,7 +183,7 @@ const articleSchema = {
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {post.affiliateProducts.map((product, i) => (
+          {post.affiliateProducts.map((product: any, i: number) => (
             <ProductCard
               name={product.name}
               productImage={product.productImage}

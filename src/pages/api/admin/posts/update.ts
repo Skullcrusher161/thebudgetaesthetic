@@ -1,5 +1,4 @@
-// src/pages/api/admin/posts/save.ts
-// Creates a new post in Sanity, uploads cover image if provided
+// src/pages/api/admin/posts/update.ts
 export const prerender = false
 
 import type { APIRoute } from 'astro'
@@ -16,7 +15,7 @@ const sanity = createClient({
 export const POST: APIRoute = async ({ request }) => {
   try {
     const formData = await request.formData()
-
+    const id = formData.get('id')?.toString()
     const title = formData.get('title')?.toString()
     const slug = formData.get('slug')?.toString()
     const content = formData.get('content')?.toString() || ''
@@ -25,58 +24,49 @@ export const POST: APIRoute = async ({ request }) => {
     const published = formData.get('published') === 'on'
     const coverImageFile = formData.get('coverImage') as File | null
 
-    if (!title || !slug) {
-      return new Response(JSON.stringify({ error: 'Title and slug are required' }), {
+    if (!id || !title || !slug) {
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       })
     }
 
-    // Upload cover image to Sanity if provided
-    let coverImageAsset = null
+    const patch: any = {
+      title,
+      slug: { _type: 'slug', current: slug },
+      body: content,
+      excerpt,
+      published,
+    }
+
+    if (categoryId) {
+      patch.category = { _type: 'reference', _ref: categoryId }
+    } else {
+      patch.category = undefined
+    }
+
+    // Upload new cover image if provided
     if (coverImageFile && coverImageFile.size > 0) {
       const buffer = await coverImageFile.arrayBuffer()
       const asset = await sanity.assets.upload('image', Buffer.from(buffer), {
         filename: coverImageFile.name,
         contentType: coverImageFile.type,
       })
-      coverImageAsset = {
+      patch.coverImage = {
         _type: 'image',
         asset: { _type: 'reference', _ref: asset._id },
-        alt: title,
       }
     }
 
-    // Build post document
-    const postDoc: any = {
-      _type: 'post',
-      title,
-      slug: { _type: 'slug', current: slug },
-      content,
-      excerpt,
-      published,
-      publishedAt: new Date().toISOString(),
-    }
+    await sanity.patch(id).set(patch).commit()
 
-    if (categoryId) {
-      postDoc.categories = [
-        { _type: 'reference', _ref: categoryId, _key: categoryId },
-      ]
-    }
-
-    if (coverImageAsset) {
-      postDoc.heroImage = coverImageAsset
-    }
-
-    const created = await sanity.create(postDoc)
-
-    return new Response(JSON.stringify({ ok: true, id: created._id }), {
+    return new Response(JSON.stringify({ ok: true }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     })
   } catch (err: any) {
-    console.error('Save post error:', err)
-    return new Response(JSON.stringify({ error: err.message || 'Failed to save' }), {
+    console.error('Update post error:', err)
+    return new Response(JSON.stringify({ error: err.message || 'Failed to update' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     })

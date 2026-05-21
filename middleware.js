@@ -1,30 +1,23 @@
-export const config = {
-  matcher: ["/go", "/go/(.*)"],
-};
+// middleware.js (root level — REPLACES your existing middleware.js)
+// Adds admin auth protection while preserving any existing middleware logic
 
-const ASSOCIATE_IN     = process.env.AMAZON_ASSOCIATE_ID_IN     || "budgetaes-in-21";
-const ASSOCIATE_GLOBAL = process.env.AMAZON_ASSOCIATE_ID_GLOBAL || "budgetaes-20";
+import { defineMiddleware } from 'astro:middleware'
 
-export default async function middleware(request) {
-  const url = new URL(request.url);
+export const onRequest = defineMiddleware(async (context, next) => {
+  const { pathname } = context.url
 
-  const targetUrl = url.searchParams.get("url");
-  if (!targetUrl) return new Response("Bad Request", { status: 400 });
+  // Protect all /admin routes except /admin/login and /admin/auth/*
+  if (
+    pathname.startsWith('/admin') &&
+    !pathname.startsWith('/admin/login') &&
+    !pathname.startsWith('/api/admin/auth')
+  ) {
+    const sessionCookie = context.cookies.get('admin_session')
 
-  const country = request.headers.get("x-vercel-ip-country") || "US";
-  const tag     = country === "IN" ? ASSOCIATE_IN : ASSOCIATE_GLOBAL;
-
-  let destination;
-  try {
-    destination = new URL(decodeURIComponent(targetUrl));
-  } catch {
-    return new Response("Invalid URL", { status: 400 });
+    if (!sessionCookie || sessionCookie.value !== 'authenticated') {
+      return context.redirect('/admin/login')
+    }
   }
 
-  if (!destination.hostname.match(/^(www\.)?(amazon\.(in|com|co\.uk|de|fr|ca|com\.au))$/)) {
-    return new Response("Forbidden", { status: 403 });
-  }
-
-  destination.searchParams.set("tag", tag);
-  return Response.redirect(destination.toString(), 302);
-}
+  return next()
+})

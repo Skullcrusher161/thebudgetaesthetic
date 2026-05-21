@@ -1,0 +1,132 @@
+---
+// src/components/CookieBanner.astro
+// GDPR + DPDPA compliant cookie consent banner
+// Add <CookieBanner /> to your BaseLayout.astro just before </body>
+---
+
+<div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie consent" style="display:none">
+  <div class="cookie-inner">
+    <div class="cookie-text">
+      <p>
+        <strong>We use cookies</strong> to analyse site traffic and track affiliate link performance.
+        Essential cookies (login sessions) are always active.
+        Analytics cookies require your consent under GDPR and India's DPDPA.
+      </p>
+    </div>
+    <div class="cookie-actions">
+      <button id="cookie-reject" class="cookie-btn secondary">Reject Analytics</button>
+      <button id="cookie-accept" class="cookie-btn primary">Accept All</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .cookie-banner {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 2.5rem);
+    max-width: 680px;
+    background: #1a1a1a;
+    color: #f5f0e8;
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+    z-index: 9999;
+    animation: slideUpIn 0.3s ease;
+  }
+
+  .cookie-inner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .cookie-text {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .cookie-text p {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: rgba(245,240,232,0.85);
+    margin: 0;
+  }
+
+  .cookie-text strong {
+    color: #f5f0e8;
+  }
+
+  .cookie-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .cookie-btn {
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+  }
+
+  .cookie-btn.primary {
+    background: #C9922A;
+    color: white;
+  }
+
+  .cookie-btn.secondary {
+    background: rgba(255,255,255,0.12);
+    color: rgba(245,240,232,0.85);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .cookie-btn:hover { opacity: 0.85; }
+
+  @keyframes slideUpIn {
+    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+  }
+</style>
+
+<script>
+  const COOKIE_KEY = 'tba_cookie_consent'
+  const banner = document.getElementById('cookie-banner') as HTMLElement
+
+  function getConsent(): string | null {
+    return localStorage.getItem(COOKIE_KEY)
+  }
+
+  function setConsent(value: 'accepted' | 'rejected') {
+    localStorage.setItem(COOKIE_KEY, value)
+    banner.style.display = 'none'
+
+    // Dispatch event so analytics can react
+    window.dispatchEvent(new CustomEvent('cookieConsent', { detail: { analytics: value === 'accepted' } }))
+  }
+
+  // Show banner only if no choice made yet
+  if (!getConsent()) {
+    // Small delay for better UX
+    setTimeout(() => { banner.style.display = 'block' }, 1200)
+  } else {
+    // Restore consent state for analytics
+    window.dispatchEvent(new CustomEvent('cookieConsent', {
+      detail: { analytics: getConsent() === 'accepted' }
+    }))
+  }
+
+  document.getElementById('cookie-accept')?.addEventListener('click', () => setConsent('accepted'))
+  document.getElementById('cookie-reject')?.addEventListener('click', () => setConsent('rejected'))
+
+  // Expose so post pages can check before firing view tracking
+  ;(window as any).getCookieConsent = getConsent
+</script>

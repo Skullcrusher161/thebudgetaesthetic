@@ -9,44 +9,91 @@ A production-ready affiliate marketing blog built with **Astro 4 (SSR)**, **Sani
 ```
 thebudgetaesthetic/
 ├── astro.config.mjs              # Astro + Vercel adapter + Sanity integration
-├── tailwind.config.mjs           # Design tokens, glassmorphism utilities
-├── vercel.json                   # Deployment + caching headers
-├── .env.example                  # All required environment variables
+├── tailwind.config.mjs           # Tailwind config + design tokens
+├── vercel.json                   # Vercel deployment + cache rules
+├── postcss.config.cjs            # Tailwind + PostCSS pipeline
+├── sanity.cli.js                 # Sanity CLI entrypoint for Studio
+├── package.json                  # Root Astro app scripts and dependencies
+├── tsconfig.json                 # TypeScript config for Astro
+├── tmp-nft-test.mjs             # Temporary test script
+├── middleware.js                 # Edge middleware for routing and security
+├── .env.example                  # Required environment variables
 │
 ├── src/
-│   ├── middleware.js             # ★ Edge Middleware: Geo-routing + security headers
-│   ├── styles/global.css         # Tailwind + Google Fonts + custom utilities
-│   │
+│   ├── env.d.ts                  # Environment types
 │   ├── lib/
-│   │   ├── sanity.js             # Sanity client, imageUrlBuilder, GROQ queries
-│   │   └── affiliateUrl.js       # Geo-aware affiliate URL builder
+│   │   ├── sanity.js             # Sanity client, GROQ queries, image helper
+│   │   └── affiliateUrl.js       # Affiliate URL builder for geo routing
+│   │
+│   ├── middleware/
+│   │   └── auth.js               # Sanity admin auth helper
 │   │
 │   ├── components/
-│   │   ├── Navbar.astro          # Sticky glassmorphic nav + mobile hamburger
-│   │   ├── PostCard.astro        # Pinterest 2:3 blog card
-│   │   └── ProductCard.astro     # ★ High-converting affiliate product card
+│   │   ├── CookieBanner.astro
+│   │   ├── Footer.astro
+│   │   ├── Navbar.astro
+│   │   ├── PortableText.astro
+│   │   ├── PostCard.astro
+│   │   ├── PostViewTracker.astro
+│   │   ├── ProductCard.astro
+│   │   ├── Studio.tsx
+│   │   └── admin/
+│   │       └── AdminLayout.astro
 │   │
 │   ├── layouts/
-│   │   └── BaseLayout.astro      # HTML shell + SEO meta + JSON-LD + footer
+│   │   └── BaseLayout.astro      # HTML shell, SEO meta, footer
 │   │
-│   └── pages/
-│       ├── index.astro           # Homepage: featured hero + masonry grid
-│       ├── blog/
-│       │   ├── index.astro       # Blog listing (masonry Pinterest layout)
-│       │   └── [slug].astro      # ★ Dynamic blog post + products + share
-│       ├── category/
-│       │   └── [category].astro  # Category filtering
-│       ├── disclosure.astro      # Affiliate disclosure (FTC compliance)
-│       ├── 404.astro             # Custom 404
-│       └── api/
-│           └── sitemap.ts        # Dynamic XML sitemap
-│
+│   ├── pages/
+│   │   ├── 404.astro
+│   │   ├── disclosure.astro
+│   │   ├── index.astro
+│   │   ├── privacy.astro
+│   │   ├── studio.astro
+│   │   ├── categories.astro
+│   │   ├── blog/
+│   │   │   ├── index.astro
+│   │   │   └── [slug].astro
+│   │   ├── category/
+│   │   │   └── [category].astro
+│   │   ├── admin/
+│   │   │   ├── analytics.astro
+│   │   │   ├── dashboard.astro
+│   │   │   ├── login.astro
+│   │   │   └── posts/
+│   │   │       ├── index.astro
+│   │   │       ├── new.astro
+│   │   │       └── edit/[id].astro
+│   │   └── api/
+│   │       ├── sitemap.ts
+│   │       ├── track-view.ts
+│   │       ├── admin/
+│   │       │   ├── auth/
+│   │       │   │   ├── callback.ts
+│   │       │   │   ├── google.ts
+│   │       │   │   ├── login.ts
+│   │       │   │   └── logout.ts
+│   │       │   ├── posts/
+│   │       │   │   ├── delete.ts
+│   │       │   │   └── save.ts
+│   │       │   └── update.ts
+│   │       └── redirect/
+│   │           ├── [...path].js
+│   │           └── [...path].ts
+│   │
+│   └── styles/
+│       └── global.css
 └── sanity/
-    ├── sanity.config.js          # Embedded Studio config + RBAC
-    └── schemas/
-        ├── post.js               # ★ Full post schema with affiliate products
-        ├── category.js           # Category schema
-        └── index.js              # Schema barrel export
+    ├── package.json
+    ├── sanity.cli.js
+    ├── sanity.config.mjs
+    ├── schemas/
+    │   ├── analyticsClick.js
+    │   ├── category.js
+    │   ├── index.js
+    │   ├── post.js
+    │   └── postView.js
+    └── public/
+        └── robots.txt
 ```
 
 ---
@@ -92,6 +139,15 @@ npm run dev
 # App: http://localhost:4321
 # Sanity Studio: http://localhost:4321/studio
 ```
+
+## Website Routes
+- `/` — homepage
+- `/blog` — blog index
+- `/blog/[slug]` — dynamic blog post pages
+- `/category/[category]` — category archive pages
+- `/categories` — website category explorer
+- `/studio` — embedded Sanity Studio
+- `/disclosure`, `/privacy`, `/404`
 
 ---
 

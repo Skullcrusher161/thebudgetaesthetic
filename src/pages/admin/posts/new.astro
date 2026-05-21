@@ -1,0 +1,538 @@
+---
+// src/pages/admin/posts/new.astro
+export const prerender = false
+
+import AdminLayout from '../../../components/admin/AdminLayout.astro'
+import { createClient } from '@sanity/client'
+
+const sanity = createClient({
+  projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID,
+  dataset: import.meta.env.PUBLIC_SANITY_DATASET || 'production',
+  apiVersion: '2024-01-01',
+  token: import.meta.env.SANITY_WRITE_TOKEN,
+  useCdn: false,
+})
+
+const categories = await sanity.fetch(`*[_type == "category"] | order(title asc){ _id, title, slug }`)
+---
+
+<AdminLayout title="New Post" activeNav="new-post">
+  <form id="post-form" class="post-form">
+    <div class="form-grid">
+      <!-- Left column: main content -->
+      <div class="form-main">
+        <div class="page-header">
+          <h1>New Post</h1>
+          <p>Create a new blog post for TheBudget Aesthetic.</p>
+        </div>
+
+        <div class="field">
+          <label for="title">Title <span class="required">*</span></label>
+          <input type="text" id="title" name="title" placeholder="e.g. Best Budget Desk Setups Under ₹10,000" required />
+        </div>
+
+        <div class="field">
+          <label for="slug">Slug <span class="required">*</span></label>
+          <div class="slug-row">
+            <span class="slug-prefix">/blog/</span>
+            <input type="text" id="slug" name="slug" placeholder="best-budget-desk-setups" required />
+          </div>
+          <p class="field-hint">Auto-generated from title. Edit if needed.</p>
+        </div>
+
+        <div class="field">
+          <label>Content <span class="required">*</span></label>
+          <div class="editor-toolbar" id="toolbar">
+            <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
+            <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
+            <button type="button" data-cmd="h2" title="Heading 2">H2</button>
+            <button type="button" data-cmd="h3" title="Heading 3">H3</button>
+            <button type="button" data-cmd="bulletList" title="Bullet List">• List</button>
+            <button type="button" data-cmd="orderedList" title="Numbered List">1. List</button>
+            <button type="button" data-cmd="blockquote" title="Blockquote">" Quote</button>
+            <button type="button" data-cmd="link" title="Link">🔗</button>
+            <button type="button" data-cmd="undo" title="Undo">↩</button>
+            <button type="button" data-cmd="redo" title="Redo">↪</button>
+          </div>
+          <div id="editor" class="editor-body" contenteditable="true"></div>
+          <input type="hidden" id="content" name="content" />
+        </div>
+
+        <div class="field">
+          <label for="excerpt">Excerpt</label>
+          <textarea id="excerpt" name="excerpt" rows="3" placeholder="Short description shown in post cards and meta tags..."></textarea>
+        </div>
+      </div>
+
+      <!-- Right column: meta -->
+      <div class="form-sidebar">
+        <div class="sidebar-card">
+          <h3>Publish</h3>
+
+          <div class="field">
+            <label for="category">Category</label>
+            <select id="category" name="categoryId">
+              <option value="">Select category</option>
+              {categories.map((cat: any) => (
+                <option value={cat._id}>{cat.title}</option>
+              ))}
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="checkbox-label">
+              <input type="checkbox" id="published" name="published" />
+              <span>Publish immediately</span>
+            </label>
+            <p class="field-hint">Leave unchecked to save as draft.</p>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="submit-btn">
+              Save Post
+            </button>
+            <a href="/admin/posts" class="btn-secondary">Cancel</a>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>Cover Image</h3>
+          <div class="image-upload-area" id="image-upload-area">
+            <input type="file" id="cover-image" name="coverImage" accept="image/*" style="display:none" />
+            <div id="image-preview" class="image-preview-empty" onclick="document.getElementById('cover-image').click()">
+              <span class="upload-icon">📷</span>
+              <p>Click to upload cover image</p>
+              <p class="field-hint">JPG, PNG, WebP — max 5MB</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div id="toast" class="toast" style="display:none"></div>
+</AdminLayout>
+
+<style>
+  .form-main {
+    min-width: 0;
+  }
+  .post-form { width: 100%; }
+
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+
+  
+  .page-header h1 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin: 0 0 0.25rem 0;
+    font-family: inherit;
+  }
+
+  .page-header p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1.5rem;
+    align-items: start;
+    width: 100%;
+  }
+
+  .form-main {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .form-main .field input[type="text"],
+  .form-main .field input[type="url"],
+  .form-main .field select,
+  .form-main .field textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+    .field {
+      margin-bottom: 1.25rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .required { color: var(--gold); }
+
+    .field input[type="text"],
+    .field input[type="url"],
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 0.7rem 0.875rem;
+      background: var(--cream-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,146,42,0.1);
+  }
+
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  .slug-row {
+    display: flex;
+    align-items: center;
+    background: var(--cream-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .slug-row:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,146,42,0.1);
+  }
+
+  .slug-prefix {
+    padding: 0.7rem 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    background: var(--cream);
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .slug-row input {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    flex: 1;
+  }
+
+  .field-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+
+  /* Editor */
+  .editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .editor-toolbar button {
+    padding: 0.3rem 0.6rem;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-family: inherit;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .editor-toolbar button:hover {
+    background: var(--cream-card);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  .editor-toolbar button.active {
+    background: var(--btn-dark);
+    color: white;
+    border-color: var(--btn-dark);
+  }
+
+  .editor-body {
+    min-height: 320px;
+    padding: 1rem;
+    background: var(--cream-card);
+    border: 1px solid var(--border);
+    border-radius: 0 0 8px 8px;
+    font-size: 0.93rem;
+    line-height: 1.7;
+    outline: none;
+    color: var(--text);
+  }
+
+  .editor-body:focus { border-color: var(--gold); }
+
+  .editor-body h2 { font-size: 1.3rem; font-weight: 700; margin: 1rem 0 0.5rem; }
+  .editor-body h3 { font-size: 1.1rem; font-weight: 600; margin: 0.75rem 0 0.4rem; }
+  .editor-body p { margin-bottom: 0.75rem; }
+  .editor-body ul, .editor-body ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+  .editor-body blockquote {
+    border-left: 3px solid var(--gold);
+    padding-left: 1rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 0.75rem 0;
+  }
+  .editor-body a { color: var(--gold); }
+
+  /* Sidebar */
+  .sidebar-card {
+    background: var(--cream-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .sidebar-card h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .checkbox-label {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.5rem;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    font-size: 0.875rem !important;
+    color: var(--text) !important;
+    cursor: pointer;
+  }
+
+  .checkbox-label input { width: auto; }
+
+  .form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .btn-primary {
+    padding: 0.7rem 1rem;
+    background: var(--btn-dark);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: opacity 0.15s;
+    font-family: inherit;
+    text-decoration: none;
+    display: block;
+  }
+
+  .btn-primary:hover { opacity: 0.8; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-secondary {
+    padding: 0.7rem 1rem;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text);
+    display: block;
+    transition: background 0.12s;
+  }
+
+  .btn-secondary:hover { background: var(--cream-hover); }
+
+  /* Image upload */
+  .image-preview-empty {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .image-preview-empty:hover { border-color: var(--gold); }
+  .upload-icon { font-size: 1.5rem; display: block; margin-bottom: 0.4rem; }
+
+  #image-preview img {
+    width: 100%;
+    border-radius: 6px;
+    display: block;
+    cursor: pointer;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 999;
+    animation: slideUp 0.2s ease;
+  }
+
+  .toast.success { background: #065f46; color: white; }
+  .toast.error { background: #b91c1c; color: white; }
+
+  @keyframes slideUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+</style>
+
+<script>
+  // Auto-generate slug from title
+  const titleInput = document.getElementById('title') as HTMLInputElement
+  const slugInput = document.getElementById('slug') as HTMLInputElement
+
+  titleInput?.addEventListener('input', () => {
+    slugInput.value = titleInput.value
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+  })
+
+  // Simple rich text editor (no external deps)
+  const editor = document.getElementById('editor') as HTMLElement
+  const contentInput = document.getElementById('content') as HTMLInputElement
+
+  document.querySelectorAll('[data-cmd]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const cmd = (btn as HTMLElement).dataset.cmd
+      if (!cmd) return
+
+      editor.focus()
+
+      switch (cmd) {
+        case 'bold': document.execCommand('bold'); break
+        case 'italic': document.execCommand('italic'); break
+        case 'h2':
+          document.execCommand('formatBlock', false, 'h2'); break
+        case 'h3':
+          document.execCommand('formatBlock', false, 'h3'); break
+        case 'bulletList':
+          document.execCommand('insertUnorderedList'); break
+        case 'orderedList':
+          document.execCommand('insertOrderedList'); break
+        case 'blockquote':
+          document.execCommand('formatBlock', false, 'blockquote'); break
+        case 'link': {
+          const url = prompt('Enter URL:')
+          if (url) document.execCommand('createLink', false, url)
+          break
+        }
+        case 'undo': document.execCommand('undo'); break
+        case 'redo': document.execCommand('redo'); break
+      }
+
+      syncContent()
+    })
+  })
+
+  function syncContent() {
+    contentInput.value = editor.innerHTML
+  }
+
+  editor?.addEventListener('input', syncContent)
+
+  // Image preview
+  const coverImageInput = document.getElementById('cover-image') as HTMLInputElement
+  const imagePreview = document.getElementById('image-preview') as HTMLElement
+
+  coverImageInput?.addEventListener('change', () => {
+    const file = coverImageInput.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    imagePreview.innerHTML = `<img src="${url}" alt="Cover preview" onclick="document.getElementById('cover-image').click()" />`
+  })
+
+  // Form submission
+  const form = document.getElementById('post-form') as HTMLFormElement
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement
+
+  function showToast(msg: string, type: 'success' | 'error') {
+    const toast = document.getElementById('toast') as HTMLElement
+    toast.textContent = msg
+    toast.className = `toast ${type}`
+    toast.style.display = 'block'
+    setTimeout(() => { toast.style.display = 'none' }, 3500)
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    syncContent()
+
+    submitBtn.disabled = true
+    submitBtn.textContent = 'Saving...'
+
+    const formData = new FormData(form)
+
+    try {
+      const res = await fetch('/api/admin/posts/save', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const result = await res.json()
+
+      if (res.ok) {
+        showToast('Post saved!', 'success')
+        setTimeout(() => {
+          window.location.href = `/admin/posts/edit/${result.id}`
+        }, 800)
+      } else {
+        showToast(result.error || 'Failed to save post', 'error')
+        submitBtn.disabled = false
+        submitBtn.textContent = 'Save Post'
+      }
+    } catch {
+      showToast('Network error. Please try again.', 'error')
+      submitBtn.disabled = false
+      submitBtn.textContent = 'Save Post'
+    }
+  })
+</script>

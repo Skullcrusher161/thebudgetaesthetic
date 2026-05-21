@@ -8,7 +8,7 @@ export const categorySchema = defineType({
     defineField({ name: "slug",  type: "slug",   title: "Slug",
       options: { source: "title" }, validation: (R) => R.required() }),
     defineField({ name: "description", type: "text", title: "Description", rows: 2 }),
-    defineField({ name: "emoji", type: "string", title: "Emoji Icon", validation: (R) => R.max(2) }),
+    defineField({ name: "emoji", type: "string", title: "Emoji Icon" }),
   ],
   preview: { select: { title: "title", subtitle: "description" } },
 });

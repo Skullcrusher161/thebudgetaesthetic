@@ -97,4 +97,16 @@ export const POSTS_BY_CATEGORY_QUERY = groq`
     "readTime": round(length(pt::text(content)) / 200)
   }
 `;
+
+export const CATEGORY_BY_SLUG_QUERY = groq`
+  *[_type == "category" && slug.current == $slug && !(_id in path("drafts.**"))][0] {
+    title, description, emoji, slug
+  }
+`;
+
+export const ALL_CATEGORIES_QUERY = groq`
+  *[_type == "category" && !(_id in path("drafts.**"))] | order(title asc) {
+    title, description, emoji, slug
+  }
+`;
  

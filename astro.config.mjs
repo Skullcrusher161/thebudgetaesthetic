@@ -1,6 +1,6 @@
 import { defineConfig } from "astro/config";
-import tailwind from "@astrojs/tailwind";
-import vercel from "@astrojs/vercel/serverless";
+import tailwindcss from "@tailwindcss/vite";
+import vercel from '@astrojs/vercel';
 import react from "@astrojs/react";
 
 export default defineConfig({
@@ -9,13 +9,18 @@ export default defineConfig({
     imageService: false,
   }),
   integrations: [
-    tailwind({ applyBaseStyles: false }),
     react(),
   ],
   vite: {
+    plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        "react/compiler-runtime": "react-compiler-runtime",
+      },
+    },
     ssr: {
       external: ["sharp"],
-      noExternal: ["sanity", "@sanity/client", "@sanity/image-url", "@sanity/vision", "styled-components"],
+      noExternal: ["sanity", "@sanity/client", "@sanity/vision", "styled-components"],
     },
     build: {
       rollupOptions: {

@@ -1,0 +1,261 @@
+---
+// src/pages/admin/posts/edit/[id].astro
+export const prerender = false
+
+import AdminLayout from '../../../../components/admin/AdminLayout.astro'
+import { createClient } from '@sanity/client'
+
+const { id } = Astro.params
+
+const sanity = createClient({
+  projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID,
+  dataset: import.meta.env.PUBLIC_SANITY_DATASET || 'production',
+  apiVersion: '2024-01-01',
+  token: import.meta.env.SANITY_WRITE_TOKEN,
+  useCdn: false,
+})
+
+const [post, categories] = await Promise.all([
+  sanity.fetch(`*[_type == "post" && _id == $id][0]{
+    _id, title, slug, content, excerpt, published, _updatedAt,
+    categories[]->{_id, title},
+    heroImage{asset->{url}}
+  }`, { id }),
+  sanity.fetch(`*[_type == "category"] | order(title asc){ _id, title, slug }`),
+])
+
+if (!post) {
+  return Astro.redirect('/admin/posts')
+}
+
+const currentCategoryId = post.categories?.[0]?._id ?? ''
+---
+
+<AdminLayout title={`Edit: ${post.title}`} activeNav="posts">
+  <div class="page-header">
+    <h1>Edit Post</h1>
+    <p>Last saved: {new Date(post._updatedAt || Date.now()).toLocaleDateString()}</p>
+  </div>
+
+  <form id="post-form" class="post-form">
+    <input type="hidden" name="id" value={post._id} />
+
+    <div class="form-grid">
+      <div class="form-main">
+        <div class="field">
+          <label for="title">Title <span class="required">*</span></label>
+          <input type="text" id="title" name="title" value={post.title} required />
+        </div>
+
+        <div class="field">
+          <label for="slug">Slug <span class="required">*</span></label>
+          <div class="slug-row">
+            <span class="slug-prefix">/blog/</span>
+            <input type="text" id="slug" name="slug" value={post.slug?.current} required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Content <span class="required">*</span></label>
+          <div class="editor-toolbar">
+            <button type="button" data-cmd="bold"><b>B</b></button>
+            <button type="button" data-cmd="italic"><i>I</i></button>
+            <button type="button" data-cmd="h2">H2</button>
+            <button type="button" data-cmd="h3">H3</button>
+            <button type="button" data-cmd="bulletList">• List</button>
+            <button type="button" data-cmd="orderedList">1. List</button>
+            <button type="button" data-cmd="blockquote">" Quote</button>
+            <button type="button" data-cmd="link">🔗</button>
+            <button type="button" data-cmd="undo">↩</button>
+            <button type="button" data-cmd="redo">↪</button>
+          </div>
+          <div id="editor" class="editor-body" contenteditable="true" set:html={post.content || ''}></div>
+          <input type="hidden" id="content" name="content" value={post.content || ''} />
+        </div>
+
+        <div class="field">
+          <label for="excerpt">Excerpt</label>
+          <textarea id="excerpt" name="excerpt" rows="3">{post.excerpt}</textarea>
+        </div>
+      </div>
+
+      <div class="form-sidebar">
+        <div class="sidebar-card">
+          <h3>Publish</h3>
+
+          <div class="field">
+            <label for="category">Category</label>
+            <select id="category" name="categoryId">
+              <option value="">Select category</option>
+              {categories.map((cat: any) => (
+                <option value={cat._id} selected={cat._id === currentCategoryId}>
+                  {cat.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                id="published"
+                name="published"
+                checked={post.published}
+              />
+              <span>Published</span>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="submit-btn">
+              Update Post
+            </button>
+            {post.slug?.current && (
+              <a href={`/blog/${post.slug.current}`} target="_blank" class="btn-secondary">
+                View Live ↗
+              </a>
+            )}
+            <a href="/admin/posts" class="btn-secondary">← All Posts</a>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>Cover Image</h3>
+          <input type="file" id="cover-image" name="coverImage" accept="image/*" style="display:none" />
+          <div id="image-preview" onclick="document.getElementById('cover-image').click()">
+            {post.heroImage?.asset?.url ? (
+              <img src={post.heroImage.asset.url} alt="Cover" class="cover-preview" />
+            ) : (
+              <div class="image-preview-empty">
+                <span class="upload-icon">📷</span>
+                <p>Click to upload cover image</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div id="toast" class="toast" style="display:none"></div>
+</AdminLayout>
+
+<style>
+  .post-form { width: 100%; }
+  .form-grid { display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; align-items: start; }
+  .field { margin-bottom: 1.25rem; }
+  .field label { display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .required { color: var(--gold); }
+  .field input[type="text"], .field select, .field textarea {
+    width: 100%; padding: 0.7rem 0.875rem; background: var(--cream-card);
+    border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem;
+    color: var(--text); outline: none; font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,146,42,0.1);
+  }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .slug-row { display: flex; align-items: center; background: var(--cream-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.15s; }
+  .slug-row:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,146,42,0.1); }
+  .slug-prefix { padding: 0.7rem 0.75rem; font-size: 0.85rem; color: var(--text-muted); background: var(--cream); border-right: 1px solid var(--border); }
+  .slug-row input { border: none !important; box-shadow: none !important; background: transparent !important; border-radius: 0 !important; flex: 1; }
+  .field-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; }
+  .editor-toolbar { display: flex; flex-wrap: wrap; gap: 0.25rem; padding: 0.5rem; background: var(--cream); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; }
+  .editor-toolbar button { padding: 0.3rem 0.6rem; background: none; border: 1px solid transparent; border-radius: 5px; font-size: 0.8rem; cursor: pointer; color: var(--text-muted); font-family: inherit; transition: background 0.1s; }
+  .editor-toolbar button:hover { background: var(--cream-card); color: var(--text); border-color: var(--border); }
+  .editor-body { min-height: 320px; padding: 1rem; background: var(--cream-card); border: 1px solid var(--border); border-radius: 0 0 8px 8px; font-size: 0.93rem; line-height: 1.7; outline: none; color: var(--text); }
+  .editor-body:focus { border-color: var(--gold); }
+  .editor-body h2 { font-size: 1.3rem; font-weight: 700; margin: 1rem 0 0.5rem; }
+  .editor-body h3 { font-size: 1.1rem; font-weight: 600; margin: 0.75rem 0 0.4rem; }
+  .editor-body p { margin-bottom: 0.75rem; }
+  .editor-body ul, .editor-body ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+  .editor-body blockquote { border-left: 3px solid var(--gold); padding-left: 1rem; color: var(--text-muted); font-style: italic; margin: 0.75rem 0; }
+  .sidebar-card { background: var(--cream-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+  .sidebar-card h3 { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 1rem; }
+  .checkbox-label { display: flex !important; flex-direction: row !important; align-items: center; gap: 0.5rem; text-transform: none !important; letter-spacing: 0 !important; font-size: 0.875rem !important; color: var(--text) !important; cursor: pointer; }
+  .checkbox-label input { width: auto; }
+  .form-actions { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
+  .btn-primary { padding: 0.7rem 1rem; background: var(--btn-dark); color: white; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; text-align: center; transition: opacity 0.15s; font-family: inherit; text-decoration: none; display: block; }
+  .btn-primary:hover { opacity: 0.8; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary { padding: 0.7rem 1rem; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; font-size: 0.875rem; font-weight: 500; text-align: center; text-decoration: none; color: var(--text); display: block; transition: background 0.12s; cursor: pointer; }
+  .btn-secondary:hover { background: var(--cream-hover); }
+  #image-preview { cursor: pointer; }
+  .cover-preview { width: 100%; border-radius: 6px; display: block; }
+  .image-preview-empty { border: 2px dashed var(--border); border-radius: 8px; padding: 1.5rem; text-align: center; font-size: 0.82rem; color: var(--text-muted); }
+  .image-preview-empty:hover { border-color: var(--gold); }
+  .upload-icon { font-size: 1.5rem; display: block; margin-bottom: 0.4rem; }
+  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; z-index: 999; }
+  .toast.success { background: #065f46; color: white; }
+  .toast.error { background: #b91c1c; color: white; }
+</style>
+
+<script>
+  const editor = document.getElementById('editor') as HTMLElement
+  const contentInput = document.getElementById('content') as HTMLInputElement
+
+  document.querySelectorAll('[data-cmd]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const cmd = (btn as HTMLElement).dataset.cmd
+      editor.focus()
+      switch (cmd) {
+        case 'bold': document.execCommand('bold'); break
+        case 'italic': document.execCommand('italic'); break
+        case 'h2': document.execCommand('formatBlock', false, 'h2'); break
+        case 'h3': document.execCommand('formatBlock', false, 'h3'); break
+        case 'bulletList': document.execCommand('insertUnorderedList'); break
+        case 'orderedList': document.execCommand('insertOrderedList'); break
+        case 'blockquote': document.execCommand('formatBlock', false, 'blockquote'); break
+        case 'link': { const url = prompt('Enter URL:'); if (url) document.execCommand('createLink', false, url); break }
+        case 'undo': document.execCommand('undo'); break
+        case 'redo': document.execCommand('redo'); break
+      }
+      syncContent()
+    })
+  })
+
+  function syncContent() { contentInput.value = editor.innerHTML }
+  editor?.addEventListener('input', syncContent)
+
+  const coverImageInput = document.getElementById('cover-image') as HTMLInputElement
+  const imagePreview = document.getElementById('image-preview') as HTMLElement
+  coverImageInput?.addEventListener('change', () => {
+    const file = coverImageInput.files?.[0]
+    if (!file) return
+    imagePreview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Cover preview" class="cover-preview" onclick="document.getElementById('cover-image').click()" />`
+  })
+
+  function showToast(msg: string, type: 'success' | 'error') {
+    const toast = document.getElementById('toast') as HTMLElement
+    toast.textContent = msg
+    toast.className = `toast ${type}`
+    toast.style.display = 'block'
+    setTimeout(() => { toast.style.display = 'none' }, 3500)
+  }
+
+  const form = document.getElementById('post-form') as HTMLFormElement
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    syncContent()
+    submitBtn.disabled = true
+    submitBtn.textContent = 'Saving...'
+    const formData = new FormData(form)
+    try {
+      const res = await fetch('/api/admin/posts/update', { method: 'POST', body: formData })
+      const result = await res.json()
+      if (res.ok) {
+        showToast('Post updated!', 'success')
+      } else {
+        showToast(result.error || 'Failed to update', 'error')
+      }
+    } catch {
+      showToast('Network error.', 'error')
+    }
+    submitBtn.disabled = false
+    submitBtn.textContent = 'Update Post'
+  })
+</script>

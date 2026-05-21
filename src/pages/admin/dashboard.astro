@@ -1,0 +1,242 @@
+---
+// src/pages/admin/dashboard.astro
+export const prerender = false
+
+import AdminLayout from '../../components/admin/AdminLayout.astro'
+import { createClient } from '@sanity/client'
+
+const sanity = createClient({
+  projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID,
+  dataset: import.meta.env.PUBLIC_SANITY_DATASET || 'production',
+  apiVersion: '2024-01-01',
+  token: import.meta.env.SANITY_WRITE_TOKEN,
+  useCdn: false,
+})
+
+// Fetch summary stats
+const [posts, totalViews, totalClicks, recentPosts] = await Promise.all([
+  sanity.fetch(`count(*[_type == "post"])`),
+  sanity.fetch(`count(*[_type == "postView"])`),
+  sanity.fetch(`count(*[_type == "analyticsClick"])`),
+  sanity.fetch(`*[_type == "post"] | order(_createdAt desc)[0..4]{
+    _id, title, slug, published, _createdAt, category->{title}
+  }`),
+])
+---
+
+<AdminLayout title="Dashboard" activeNav="dashboard">
+  <div class="page-header">
+    <h1>Dashboard</h1>
+    <p>Welcome back. Here's what's happening on TheBudget Aesthetic.</p>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📝</div>
+      <div class="stat-value">{posts}</div>
+      <div class="stat-label">Total Posts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">👁</div>
+      <div class="stat-value">{totalViews}</div>
+      <div class="stat-label">Post Views</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🔗</div>
+      <div class="stat-value">{totalClicks}</div>
+      <div class="stat-label">Affiliate Clicks</div>
+    </div>
+  </div>
+
+  <!-- Recent posts -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Recent Posts</h2>
+      <a href="/admin/posts/new" class="btn-primary">+ New Post</a>
+    </div>
+
+    <div class="posts-table">
+      <div class="table-head">
+        <span>Title</span>
+        <span>Category</span>
+        <span>Status</span>
+        <span>Date</span>
+        <span></span>
+      </div>
+
+      {recentPosts.length === 0 && (
+        <div class="empty-state">
+          <p>No posts yet. <a href="/admin/posts/new">Create your first post →</a></p>
+        </div>
+      )}
+
+      {recentPosts.map((post: any) => (
+        <div class="table-row">
+          <span class="post-title">{post.title}</span>
+          <span class="tag">{post.category?.title || '—'}</span>
+          <span>
+            <span class={`status ${post.published ? 'published' : 'draft'}`}>
+              {post.published ? 'Published' : 'Draft'}
+            </span>
+          </span>
+          <span class="date">
+            {new Date(post._createdAt).toLocaleDateString('en-IN', {
+              day: 'numeric', month: 'short', year: 'numeric'
+            })}
+          </span>
+          <span class="actions">
+            <a href={`/admin/posts/edit/${post._id}`}>Edit</a>
+            <a href={`/blog/${post.slug?.current}`} target="_blank">View</a>
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+</AdminLayout>
+
+<style>
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .stat-card {
+    background: var(--cream-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+
+  .stat-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .btn-primary {
+    padding: 0.5rem 1rem;
+    background: var(--btn-dark);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+
+  .btn-primary:hover { opacity: 0.8; }
+
+  .posts-table {
+    background: var(--cream-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .table-head {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 0.7fr;
+    padding: 0.65rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.73rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+  }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 0.7fr;
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    font-size: 0.875rem;
+    transition: background 0.1s;
+  }
+
+  .table-row:last-child { border-bottom: none; }
+  .table-row:hover { background: var(--cream-hover); }
+
+  .post-title { font-weight: 500; }
+
+  .tag {
+    font-size: 0.75rem;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.2rem 0.6rem;
+    width: fit-content;
+    color: var(--text-muted);
+  }
+
+  .status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+  }
+
+  .status.published {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .status.draft {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .date { font-size: 0.8rem; color: var(--text-muted); }
+
+  .actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .actions a {
+    font-size: 0.8rem;
+    color: var(--gold);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .actions a:hover { text-decoration: underline; }
+
+  .empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+
+  .empty-state a { color: var(--gold); }
+</style>
