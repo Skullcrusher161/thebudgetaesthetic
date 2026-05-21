@@ -29,7 +29,6 @@ const categoryMeta: Record<string, { emoji: string; subtitle: string; tag: strin
 >
   <div class="max-w-6xl mx-auto px-5 sm:px-8 py-16">
 
-    <!-- Header -->
     <div class="mb-12 animate-fade-up">
       <div class="flex items-center gap-2 mb-4">
         <span class="w-6 h-px bg-accent"></span>
@@ -55,15 +54,12 @@ const categoryMeta: Record<string, { emoji: string; subtitle: string; tag: strin
               class="group glass rounded-3xl p-7 flex flex-col gap-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover animate-fade-up"
               style={`animation-delay: ${i * 80}ms`}
             >
-              <!-- Icon + tag -->
               <div class="flex items-start justify-between">
                 <span class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent/10 text-3xl">
                   {meta.emoji}
                 </span>
                 <span class="tag tag-setup">{meta.tag}</span>
               </div>
-
-              <!-- Title + description -->
               <div class="flex flex-col gap-2 flex-1">
                 <h2 class="font-display text-xl font-semibold text-ink group-hover:text-accent transition-colors">
                   {category.title}
@@ -72,8 +68,6 @@ const categoryMeta: Record<string, { emoji: string; subtitle: string; tag: strin
                   {meta.subtitle}
                 </p>
               </div>
-
-              <!-- CTA -->
               <div class="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-accent font-medium">
                 Explore
                 <span class="transition-transform group-hover:translate-x-1">→</span>
