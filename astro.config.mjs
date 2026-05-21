@@ -7,11 +7,10 @@ export default defineConfig({
   output: "server",
   adapter: vercel({
     imageService: false,
-    // edgeMiddleware removed — Vercel Edge Runtime cannot resolve
-    // the astro:middleware virtual module at bundle time, causing:
-    // "Edge Function middleware is referencing unsupported modules"
-    // Middleware runs in the SSR serverless function instead;
-    // x-vercel-ip-country geo headers are still available there.
+    edgeMiddleware: false, // Must be explicit — unified @astrojs/vercel defaults to true,
+                           // which tries to bundle astro:middleware for the Edge Runtime
+                           // (unsupported). Middleware runs in the SSR function instead;
+                           // x-vercel-ip-country geo headers still work there.
   }),
   integrations: [
     react(),
