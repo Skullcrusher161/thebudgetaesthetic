@@ -1,0 +1,33 @@
+---
+// src/components/TrackView.astro
+// Drop into any blog post layout to fire a view event.
+//
+// Usage:
+//   import TrackView from '../../components/TrackView.astro'
+//   <TrackView slug={post.slug.current} title={post.title} />
+
+interface Props {
+  slug:  string
+  title: string
+}
+const { slug, title } = Astro.props
+---
+
+<script define:vars={{ slug, title }}>
+  (function trackView() {
+    const payload = JSON.stringify({ postSlug: slug, postTitle: title })
+    const url     = '/api/track-view'
+
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'application/json' })
+      navigator.sendBeacon(url, blob)
+    } else {
+      fetch(url, {
+        method:    'POST',
+        headers:   { 'Content-Type': 'application/json' },
+        body:      payload,
+        keepalive: true,
+      }).catch(() => {})
+    }
+  })()
+</script>

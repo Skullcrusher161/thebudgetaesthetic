@@ -1,7 +1,4 @@
 // src/pages/api/track-view.ts
-// Called client-side on every blog post page load
-// Logs a postView document to Sanity (non-blocking, fire-and-forget)
-
 export const prerender = false
 
 import type { APIRoute } from 'astro'
@@ -11,7 +8,7 @@ const sanityClient = createClient({
   projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID,
   dataset: import.meta.env.PUBLIC_SANITY_DATASET || 'production',
   apiVersion: '2024-01-01',
-  token: import.meta.env.SANITY_WRITE_TOKEN, // needs write token
+  token: import.meta.env.SANITY_WRITE_TOKEN,
   useCdn: false,
 })
 
@@ -26,14 +23,15 @@ export const POST: APIRoute = async ({ request }) => {
       })
     }
 
-    // Get country from Vercel edge header
-    const country = request.headers.get('x-vercel-ip-country') || 'Global'
+    const country  = request.headers.get('x-vercel-ip-country') || 'Global'
+    const referrer = request.headers.get('referer') || ''   // ← ADDED
 
     await sanityClient.create({
       _type: 'postView',
       postSlug,
       postTitle: postTitle || postSlug,
       country,
+      referrer,                                              // ← ADDED
       viewedAt: new Date().toISOString(),
     })
 

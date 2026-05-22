@@ -1,5 +1,4 @@
 // sanity/schemas/postView.js
-// Tracks individual post page views
 export default {
   name: 'postView',
   title: 'Post View',
@@ -20,6 +19,13 @@ export default {
       title: 'Country',
       type: 'string',
       initialValue: 'Global',
+    },
+    {
+      name: 'referrer',         // ← ADDED
+      title: 'Referrer URL',
+      type: 'string',
+      initialValue: '',
+      validation: Rule => Rule.max(500),
     },
     {
       name: 'viewedAt',

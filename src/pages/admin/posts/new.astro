@@ -51,11 +51,21 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
             <button type="button" data-cmd="orderedList" title="Numbered List">1. List</button>
             <button type="button" data-cmd="blockquote" title="Blockquote">" Quote</button>
             <button type="button" data-cmd="link" title="Link">🔗</button>
+            <!-- ── INLINE IMAGE BUTTON ── -->
+            <button type="button" data-cmd="inlineImage" title="Insert inline image" id="inline-img-btn">🖼 Image</button>
+            <input type="file" id="inline-image-input" accept="image/*" style="display:none" />
+            <!-- ── END INLINE IMAGE ── -->
             <button type="button" data-cmd="undo" title="Undo">↩</button>
             <button type="button" data-cmd="redo" title="Redo">↪</button>
           </div>
           <div id="editor" class="editor-body" contenteditable="true"></div>
           <input type="hidden" id="content" name="content" />
+          <!-- ── INLINE IMAGE UPLOAD PROGRESS ── -->
+          <div id="inline-img-progress" class="inline-img-progress" style="display:none">
+            <span class="progress-dot"></span>
+            <span id="inline-img-progress-label">Uploading image…</span>
+          </div>
+          <!-- ── END PROGRESS ── -->
         </div>
 
         <div class="field">
@@ -123,7 +133,6 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     margin-bottom: 1.5rem;
   }
 
-  
   .page-header h1 {
     font-size: 0.8rem;
     font-weight: 700;
@@ -162,43 +171,43 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     box-sizing: border-box;
   }
 
-    .field {
-      margin-bottom: 1.25rem;
-    }
+  .field {
+    margin-bottom: 1.25rem;
+  }
 
-    .field label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-      margin-bottom: 0.4rem;
-    }
+  .field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+  }
 
-    .required { color: var(--gold); }
+  .required { color: var(--gold); }
 
-    .field input[type="text"],
-    .field input[type="url"],
-    .field select,
-    .field textarea {
-      width: 100%;
-      padding: 0.7rem 0.875rem;
-      background: var(--cream-card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.9rem;
-      color: var(--text);
-      outline: none;
-      font-family: inherit;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
+  .field input[type="text"],
+  .field input[type="url"],
+  .field select,
+  .field textarea {
+    width: 100%;
+    padding: 0.7rem 0.875rem;
+    background: var(--cream-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--text);
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
 
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus {
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(201,146,42,0.1);
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,146,42,0.1);
   }
 
   .field textarea { resize: vertical; min-height: 80px; }
@@ -276,6 +285,64 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     color: white;
     border-color: var(--btn-dark);
   }
+
+  /* ── INLINE IMAGE BUTTON VARIANT ── */
+  #inline-img-btn {
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+  }
+
+  #inline-img-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(201,146,42,0.06);
+  }
+
+  #inline-img-btn.uploading {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .inline-img-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .progress-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.75); }
+  }
+
+  /* ── INLINE IMAGE INSIDE EDITOR ── */
+  .editor-body img.inline-img {
+    max-width: 100%;
+    border-radius: 6px;
+    display: block;
+    margin: 0.75rem 0;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.15s;
+  }
+
+  .editor-body img.inline-img:hover {
+    border-color: var(--gold);
+  }
+
+  /* ── END INLINE IMAGE STYLES ── */
 
   .editor-body {
     min-height: 320px;
@@ -445,6 +512,9 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
       const cmd = (btn as HTMLElement).dataset.cmd
       if (!cmd) return
 
+      // ── INLINE IMAGE: handled separately ──
+      if (cmd === 'inlineImage') return
+
       editor.focus()
 
       switch (cmd) {
@@ -479,7 +549,142 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
 
   editor?.addEventListener('input', syncContent)
 
-  // Image preview
+  // ────────────────────────────────────────────
+  // INLINE IMAGE UPLOAD
+  // ────────────────────────────────────────────
+  const inlineImgBtn = document.getElementById('inline-img-btn') as HTMLButtonElement
+  const inlineImgInput = document.getElementById('inline-image-input') as HTMLInputElement
+  const inlineImgProgress = document.getElementById('inline-img-progress') as HTMLElement
+  const inlineImgProgressLabel = document.getElementById('inline-img-progress-label') as HTMLElement
+
+  // Saved selection so image inserts at correct cursor position
+  let savedRange: Range | null = null
+
+  inlineImgBtn?.addEventListener('click', () => {
+    // Save current cursor position inside editor
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
+      savedRange = sel.getRangeAt(0).cloneRange()
+    } else {
+      savedRange = null
+    }
+    inlineImgInput.click()
+  })
+
+  inlineImgInput?.addEventListener('change', async () => {
+    const file = inlineImgInput.files?.[0]
+    if (!file) return
+
+    // Validate size (max 5 MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image too large — max 5 MB', 'error')
+      inlineImgInput.value = ''
+      return
+    }
+
+    // Show uploading state
+    inlineImgBtn.classList.add('uploading')
+    inlineImgProgress.style.display = 'flex'
+    inlineImgProgressLabel.textContent = 'Uploading image…'
+
+    try {
+      // Upload to Sanity via existing API route
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const res = await fetch('/api/admin/upload-image', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Upload failed')
+      }
+
+      const { url, assetId } = await res.json()
+
+      // Insert image at saved cursor position (or end of editor)
+      const img = document.createElement('img')
+      img.src = url
+      img.alt = file.name.replace(/\.[^.]+$/, '')
+      img.className = 'inline-img'
+      img.dataset.sanityAssetId = assetId ?? ''
+
+      // Restore saved selection and insert
+      const sel = window.getSelection()
+      sel?.removeAllRanges()
+
+      if (savedRange) {
+        sel?.addRange(savedRange)
+        savedRange.deleteContents()
+        savedRange.insertNode(img)
+        // Move cursor after inserted image
+        savedRange.setStartAfter(img)
+        savedRange.collapse(true)
+        sel?.removeAllRanges()
+        sel?.addRange(savedRange)
+      } else {
+        // Fallback: append at end
+        editor.appendChild(img)
+      }
+
+      // Add line break after image for continued typing
+      const br = document.createElement('p')
+      br.innerHTML = '<br>'
+      img.insertAdjacentElement('afterend', br)
+
+      syncContent()
+      inlineImgProgressLabel.textContent = 'Image inserted ✓'
+      setTimeout(() => {
+        inlineImgProgress.style.display = 'none'
+      }, 1500)
+
+    } catch (err: any) {
+      showToast(err.message || 'Image upload failed', 'error')
+      inlineImgProgress.style.display = 'none'
+    } finally {
+      inlineImgBtn.classList.remove('uploading')
+      inlineImgInput.value = ''
+    }
+  })
+
+  // Drag-and-drop images directly into editor
+  editor?.addEventListener('dragover', (e) => {
+    e.preventDefault()
+    editor.style.borderColor = 'var(--gold)'
+  })
+
+  editor?.addEventListener('dragleave', () => {
+    editor.style.borderColor = ''
+  })
+
+  editor?.addEventListener('drop', async (e) => {
+    e.preventDefault()
+    editor.style.borderColor = ''
+
+    const files = Array.from(e.dataTransfer?.files ?? []).filter(f => f.type.startsWith('image/'))
+    if (!files.length) return
+
+    for (const file of files) {
+      // Re-use the same upload logic by triggering a synthetic upload
+      const dt = new DataTransfer()
+      dt.items.add(file)
+      inlineImgInput.files = dt.files
+
+      // Save drop position as range
+      const sel = window.getSelection()
+      if (sel && sel.rangeCount > 0) savedRange = sel.getRangeAt(0).cloneRange()
+
+      // Dispatch change event to trigger upload handler
+      inlineImgInput.dispatchEvent(new Event('change'))
+    }
+  })
+  // ────────────────────────────────────────────
+  // END INLINE IMAGE UPLOAD
+  // ────────────────────────────────────────────
+
+  // Cover image preview
   const coverImageInput = document.getElementById('cover-image') as HTMLInputElement
   const imagePreview = document.getElementById('image-preview') as HTMLElement
 
