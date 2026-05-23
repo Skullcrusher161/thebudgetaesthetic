@@ -8,25 +8,32 @@ A production-ready affiliate marketing blog built with **Astro 4 (SSR)**, **Sani
 
 ```
 thebudgetaesthetic/
-├── astro.config.mjs              # Astro + Vercel adapter + Sanity integration
-├── tailwind.config.mjs           # Tailwind config + design tokens
-├── vercel.json                   # Vercel deployment + cache rules
-├── postcss.config.cjs            # Tailwind + PostCSS pipeline
-├── sanity.cli.js                 # Sanity CLI entrypoint for Studio
-├── package.json                  # Root Astro app scripts and dependencies
-├── tsconfig.json                 # TypeScript config for Astro
+├── .gitattributes               # Git attributes
+├── .gitignore                   # Ignored files
+├── .env.example                 # Required environment variables
+├── .vercelignore                # Vercel deployment ignores
+├── astro.config.mjs             # Astro + Vercel adapter + Sanity integration
+├── package-lock.json            # Installed npm lockfile
+├── package.json                 # Root Astro app scripts and dependencies
+├── postcss.config.cjs           # PostCSS pipeline for Tailwind
+├── README.md                    # Project documentation
+├── SETUP.md                     # Setup instructions
+├── tsconfig.json                # TypeScript config for Astro
 ├── tmp-nft-test.mjs             # Temporary test script
-├── middleware.js                 # Edge middleware for routing and security
-├── .env.example                  # Required environment variables
+├── vercel.json                  # Vercel deployment + cache rules
+├── public/
+│   ├── favicon.svg
+│   ├── logo-icon.svg
+│   └── logo.svg
 │
 ├── src/
-│   ├── env.d.ts                  # Environment types
+│   ├── env.d.ts                 # Environment types
 │   ├── lib/
-│   │   ├── sanity.js             # Sanity client, GROQ queries, image helper
-│   │   └── affiliateUrl.js       # Affiliate URL builder for geo routing
+│   │   ├── affiliateUrl.js      # Affiliate URL builder for geo routing
+│   │   └── sanity.js            # Sanity client, GROQ queries, image helper
 │   │
 │   ├── middleware/
-│   │   └── auth.js               # Sanity admin auth helper
+│   │   └── auth.js              # Sanity admin auth helper
 │   │
 │   ├── components/
 │   │   ├── CookieBanner.astro
@@ -37,24 +44,20 @@ thebudgetaesthetic/
 │   │   ├── PostViewTracker.astro
 │   │   ├── ProductCard.astro
 │   │   ├── Studio.tsx
+│   │   ├── TrackView.astro
 │   │   └── admin/
 │   │       └── AdminLayout.astro
 │   │
 │   ├── layouts/
-│   │   └── BaseLayout.astro      # HTML shell, SEO meta, footer
+│   │   └── BaseLayout.astro     # HTML shell, SEO meta, footer
 │   │
 │   ├── pages/
 │   │   ├── 404.astro
+│   │   ├── categories.astro
 │   │   ├── disclosure.astro
 │   │   ├── index.astro
 │   │   ├── privacy.astro
 │   │   ├── studio.astro
-│   │   ├── categories.astro
-│   │   ├── blog/
-│   │   │   ├── index.astro
-│   │   │   └── [slug].astro
-│   │   ├── category/
-│   │   │   └── [category].astro
 │   │   ├── admin/
 │   │   │   ├── analytics.astro
 │   │   │   ├── dashboard.astro
@@ -62,7 +65,13 @@ thebudgetaesthetic/
 │   │   │   └── posts/
 │   │   │       ├── index.astro
 │   │   │       ├── new.astro
-│   │   │       └── edit/[id].astro
+│   │   │       └── edit/
+│   │   │           └── [id].astro
+│   │   ├── blog/
+│   │   │   ├── index.astro
+│   │   │   └── [slug].astro
+│   │   ├── category/
+│   │   │   └── [category].astro
 │   │   └── api/
 │   │       ├── sitemap.ts
 │   │       ├── track-view.ts
@@ -74,26 +83,31 @@ thebudgetaesthetic/
 │   │       │   │   └── logout.ts
 │   │       │   ├── posts/
 │   │       │   │   ├── delete.ts
-│   │       │   │   └── save.ts
-│   │       │   └── update.ts
+│   │       │   │   ├── save.ts
+│   │       │   │   └── update.ts
+│   │       │   ├── test-upload.ts
+│   │       │   └── upload-image.ts
 │   │       └── redirect/
-│   │           ├── [...path].js
-│   │           └── [...path].ts
+│   │           └── [...path].js
 │   │
 │   └── styles/
 │       └── global.css
 └── sanity/
+    ├── package-lock.json
     ├── package.json
     ├── sanity.cli.js
     ├── sanity.config.mjs
+    ├── public/
+    │   ├── favicon.svg
+    │   ├── logo-icon.svg
+    │   ├── logo.svg
+    │   └── robots.txt
     ├── schemas/
     │   ├── analyticsClick.js
     │   ├── category.js
     │   ├── index.js
     │   ├── post.js
     │   └── postView.js
-    └── public/
-        └── robots.txt
 ```
 
 ---
