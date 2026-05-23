@@ -19,7 +19,12 @@ const [post, categories] = await Promise.all([
   sanity.fetch(`*[_type == "post" && _id == $id][0]{
     _id, title, slug, content, excerpt, published, _updatedAt,
     categories[]->{_id, title},
-    heroImage{asset->{url}}
+    heroImage{asset->{url}},
+    affiliateProducts[]{
+      _key, name, badge, price, currency, rating, ratingCount,
+      indiaLink, globalLink,
+      productImage{asset->{_id, url}}
+    }
   }`, { id }),
   sanity.fetch(`*[_type == "category"] | order(title asc){ _id, title, slug }`),
 ])
@@ -29,6 +34,9 @@ if (!post) {
 }
 
 const currentCategoryId = post.categories?.[0]?._id ?? ''
+
+// Serialize affiliate products so we can re-hydrate cards in the editor
+const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
 ---
 
 <AdminLayout title={`Edit: ${post.title}`} activeNav="posts">
@@ -41,6 +49,7 @@ const currentCategoryId = post.categories?.[0]?._id ?? ''
     <input type="hidden" name="id" value={post._id} />
 
     <div class="form-grid">
+      <!-- Left: main content -->
       <div class="form-main">
         <div class="field">
           <label for="title">Title <span class="required">*</span></label>
@@ -57,7 +66,7 @@ const currentCategoryId = post.categories?.[0]?._id ?? ''
 
         <div class="field">
           <label>Content <span class="required">*</span></label>
-          <div class="editor-toolbar">
+          <div class="editor-toolbar" id="toolbar">
             <button type="button" data-cmd="bold"><b>B</b></button>
             <button type="button" data-cmd="italic"><i>I</i></button>
             <button type="button" data-cmd="h2">H2</button>
@@ -66,11 +75,22 @@ const currentCategoryId = post.categories?.[0]?._id ?? ''
             <button type="button" data-cmd="orderedList">1. List</button>
             <button type="button" data-cmd="blockquote">" Quote</button>
             <button type="button" data-cmd="link">🔗</button>
+            <!-- ── INLINE IMAGE ── -->
+            <button type="button" data-cmd="inlineImage" id="inline-img-btn" title="Insert inline image">🖼 Image</button>
+            <input type="file" id="inline-image-input" accept="image/*" style="display:none" />
+            <!-- ── PRODUCT CARD ── -->
+            <button type="button" data-cmd="productCard" id="product-card-btn" title="Insert product card">🛍 Product</button>
             <button type="button" data-cmd="undo">↩</button>
             <button type="button" data-cmd="redo">↪</button>
           </div>
+
           <div id="editor" class="editor-body" contenteditable="true" set:html={post.content || ''}></div>
           <input type="hidden" id="content" name="content" value={post.content || ''} />
+
+          <div id="inline-img-progress" class="inline-img-progress" style="display:none">
+            <span class="progress-dot"></span>
+            <span id="inline-img-progress-label">Uploading image…</span>
+          </div>
         </div>
 
         <div class="field">
@@ -79,6 +99,7 @@ const currentCategoryId = post.categories?.[0]?._id ?? ''
         </div>
       </div>
 
+      <!-- Right: sidebar -->
       <div class="form-sidebar">
         <div class="sidebar-card">
           <h3>Publish</h3>
@@ -97,20 +118,13 @@ const currentCategoryId = post.categories?.[0]?._id ?? ''
 
           <div class="field">
             <label class="checkbox-label">
-              <input
-                type="checkbox"
-                id="published"
-                name="published"
-                checked={post.published}
-              />
+              <input type="checkbox" id="published" name="published" checked={post.published} />
               <span>Published</span>
             </label>
           </div>
 
           <div class="form-actions">
-            <button type="submit" class="btn-primary" id="submit-btn">
-              Update Post
-            </button>
+            <button type="submit" class="btn-primary" id="submit-btn">Update Post</button>
             {post.slug?.current && (
               <a href={`/blog/${post.slug.current}`} target="_blank" class="btn-secondary">
                 View Live ↗
@@ -138,15 +152,108 @@ const currentCategoryId = post.categories?.[0]?._id ?? ''
     </div>
   </form>
 
+  <!-- ════════════════════════════════════════════
+       PRODUCT CARD MODAL
+  ════════════════════════════════════════════ -->
+  <div id="product-modal-overlay" class="modal-overlay" style="display:none">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <h2 id="modal-title">Insert Product Card</h2>
+        <button type="button" id="modal-close" class="modal-close" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-field">
+          <label>Product Image</label>
+          <div class="product-img-upload">
+            <input type="file" id="product-img-input" accept="image/*" style="display:none" />
+            <div id="product-img-preview" class="product-img-preview-empty"
+                 onclick="document.getElementById('product-img-input').click()">
+              <span>📦</span>
+              <p>Click to upload product image</p>
+            </div>
+          </div>
+          <div id="product-img-progress" class="inline-img-progress" style="display:none">
+            <span class="progress-dot"></span>
+            <span id="product-img-progress-label">Uploading…</span>
+          </div>
+        </div>
+
+        <div class="modal-two-col">
+          <div class="modal-field">
+            <label for="p-name">Product Name <span class="required">*</span></label>
+            <input type="text" id="p-name" placeholder="e.g. Ant Esports MK3400" />
+          </div>
+          <div class="modal-field">
+            <label for="p-badge">Badge</label>
+            <input type="text" id="p-badge" placeholder="e.g. Best Seller" />
+          </div>
+        </div>
+
+        <div class="modal-two-col">
+          <div class="modal-field">
+            <label for="p-price-inr">Price (₹ INR)</label>
+            <input type="number" id="p-price-inr" placeholder="e.g. 1999" min="0" />
+          </div>
+          <div class="modal-field">
+            <label for="p-price-usd">Price ($ USD)</label>
+            <input type="number" id="p-price-usd" placeholder="e.g. 24" min="0" />
+          </div>
+        </div>
+
+        <div class="modal-two-col">
+          <div class="modal-field">
+            <label for="p-rating">Rating (0–5)</label>
+            <input type="number" id="p-rating" placeholder="e.g. 4.3" min="0" max="5" step="0.1" />
+          </div>
+          <div class="modal-field">
+            <label for="p-rating-count">Ratings Count</label>
+            <input type="number" id="p-rating-count" placeholder="e.g. 2400" min="0" />
+          </div>
+        </div>
+
+        <div class="modal-field">
+          <label for="p-india-link">
+            🇮🇳 India Affiliate Link (Amazon.in) <span class="required">*</span>
+          </label>
+          <input type="url" id="p-india-link" placeholder="https://www.amazon.in/dp/..." />
+        </div>
+
+        <div class="modal-field">
+          <label for="p-global-link">
+            🌍 Global Affiliate Link (Amazon.com) <span class="required">*</span>
+          </label>
+          <input type="url" id="p-global-link" placeholder="https://www.amazon.com/dp/..." />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="modal-cancel" class="btn-secondary">Cancel</button>
+        <button type="button" id="modal-insert" class="btn-primary" disabled>Insert Card</button>
+      </div>
+    </div>
+  </div>
+  <!-- ════════════════════════════════════════════ -->
+
+  <!-- Pass saved products to the client script -->
+  <script type="application/json" id="saved-products-data" set:text={savedProducts}></script>
+
   <div id="toast" class="toast" style="display:none"></div>
 </AdminLayout>
 
 <style>
   .post-form { width: 100%; }
   .form-grid { display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; align-items: start; }
+  .form-main { min-width: 0; overflow: hidden; }
+
+  .page-header { margin-bottom: 1.5rem; }
+  .page-header h1 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0 0 0.25rem 0; }
+  .page-header p { font-size: 0.75rem; color: var(--text-muted); margin: 0; }
+
   .field { margin-bottom: 1.25rem; }
   .field label { display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.4rem; }
   .required { color: var(--gold); }
+
   .field input[type="text"], .field select, .field textarea {
     width: 100%; padding: 0.7rem 0.875rem; background: var(--cream-card);
     border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem;
@@ -157,14 +264,28 @@ const currentCategoryId = post.categories?.[0]?._id ?? ''
     border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,146,42,0.1);
   }
   .field textarea { resize: vertical; min-height: 80px; }
+
   .slug-row { display: flex; align-items: center; background: var(--cream-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.15s; }
   .slug-row:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,146,42,0.1); }
-  .slug-prefix { padding: 0.7rem 0.75rem; font-size: 0.85rem; color: var(--text-muted); background: var(--cream); border-right: 1px solid var(--border); }
+  .slug-prefix { padding: 0.7rem 0.75rem; font-size: 0.85rem; color: var(--text-muted); background: var(--cream); border-right: 1px solid var(--border); white-space: nowrap; }
   .slug-row input { border: none !important; box-shadow: none !important; background: transparent !important; border-radius: 0 !important; flex: 1; }
-  .field-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+  /* Editor */
   .editor-toolbar { display: flex; flex-wrap: wrap; gap: 0.25rem; padding: 0.5rem; background: var(--cream); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; }
   .editor-toolbar button { padding: 0.3rem 0.6rem; background: none; border: 1px solid transparent; border-radius: 5px; font-size: 0.8rem; cursor: pointer; color: var(--text-muted); font-family: inherit; transition: background 0.1s; }
   .editor-toolbar button:hover { background: var(--cream-card); color: var(--text); border-color: var(--border); }
+
+  #inline-img-btn { border: 1px dashed var(--border); }
+  #inline-img-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,146,42,0.06); }
+  #inline-img-btn.uploading { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+  #product-card-btn { border: 1px dashed var(--border); }
+  #product-card-btn:hover { border-color: #c97b2a; color: #c97b2a; background: rgba(201,123,42,0.06); }
+
+  .inline-img-progress { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem; font-size: 0.78rem; color: var(--text-muted); }
+  .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
+
   .editor-body { min-height: 320px; padding: 1rem; background: var(--cream-card); border: 1px solid var(--border); border-radius: 0 0 8px 8px; font-size: 0.93rem; line-height: 1.7; outline: none; color: var(--text); }
   .editor-body:focus { border-color: var(--gold); }
   .editor-body h2 { font-size: 1.3rem; font-weight: 700; margin: 1rem 0 0.5rem; }
@@ -172,33 +293,96 @@ const currentCategoryId = post.categories?.[0]?._id ?? ''
   .editor-body p { margin-bottom: 0.75rem; }
   .editor-body ul, .editor-body ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
   .editor-body blockquote { border-left: 3px solid var(--gold); padding-left: 1rem; color: var(--text-muted); font-style: italic; margin: 0.75rem 0; }
+  .editor-body a { color: var(--gold); }
+
+  /* Inline images */
+  .editor-body img.inline-img { max-width: 100%; border-radius: 6px; display: block; margin: 0.75rem 0; cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s; }
+  .editor-body img.inline-img:hover { border-color: var(--gold); }
+
+  /* ── Inline product card ── */
+  .editor-body .inline-product-card {
+    display: grid; grid-template-columns: 120px 1fr; gap: 1rem;
+    background: var(--cream); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1rem; margin: 1rem 0; position: relative;
+    user-select: none; cursor: default;
+  }
+  .editor-body .inline-product-card:hover { border-color: var(--gold); }
+  .editor-body .inline-product-card .card-remove {
+    position: absolute; top: 0.5rem; right: 0.5rem;
+    background: #b91c1c; color: white; border: none; border-radius: 50%;
+    width: 22px; height: 22px; font-size: 0.65rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .editor-body .inline-product-card:hover .card-remove { opacity: 1; }
+  .editor-body .inline-product-card .card-img { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; display: block; }
+  .editor-body .inline-product-card .card-img-placeholder { width: 120px; height: 120px; background: var(--cream-card); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--text-muted); }
+  .editor-body .inline-product-card .card-info { display: flex; flex-direction: column; gap: 0.35rem; }
+  .editor-body .inline-product-card .card-badge { display: inline-block; background: var(--gold); color: white; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.2rem 0.5rem; border-radius: 4px; width: fit-content; }
+  .editor-body .inline-product-card .card-name { font-size: 0.92rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .editor-body .inline-product-card .card-rating { display: flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; color: var(--text-muted); }
+  .editor-body .inline-product-card .card-rating .stars { color: #f59e0b; letter-spacing: -1px; }
+  .editor-body .inline-product-card .card-prices { display: flex; gap: 0.75rem; font-size: 0.8rem; }
+  .editor-body .inline-product-card .card-price-inr { font-weight: 700; color: var(--text); }
+  .editor-body .inline-product-card .card-price-usd { color: var(--text-muted); }
+  .editor-body .inline-product-card .card-btns { display: flex; gap: 0.5rem; margin-top: 0.25rem; flex-wrap: wrap; }
+  .editor-body .inline-product-card .card-btn-india { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.75rem; background: #ff9900; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-decoration: none; font-family: inherit; }
+  .editor-body .inline-product-card .card-btn-global { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.75rem; background: var(--cream-card); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-decoration: none; font-family: inherit; }
+  .editor-body .inline-product-card .card-disclosure { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+  /* Sidebar */
   .sidebar-card { background: var(--cream-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
   .sidebar-card h3 { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 1rem; }
   .checkbox-label { display: flex !important; flex-direction: row !important; align-items: center; gap: 0.5rem; text-transform: none !important; letter-spacing: 0 !important; font-size: 0.875rem !important; color: var(--text) !important; cursor: pointer; }
   .checkbox-label input { width: auto; }
   .form-actions { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
+
   .btn-primary { padding: 0.7rem 1rem; background: var(--btn-dark); color: white; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; text-align: center; transition: opacity 0.15s; font-family: inherit; text-decoration: none; display: block; }
   .btn-primary:hover { opacity: 0.8; }
   .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-secondary { padding: 0.7rem 1rem; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; font-size: 0.875rem; font-weight: 500; text-align: center; text-decoration: none; color: var(--text); display: block; transition: background 0.12s; cursor: pointer; }
   .btn-secondary:hover { background: var(--cream-hover); }
+
   #image-preview { cursor: pointer; }
   .cover-preview { width: 100%; border-radius: 6px; display: block; }
   .image-preview-empty { border: 2px dashed var(--border); border-radius: 8px; padding: 1.5rem; text-align: center; font-size: 0.82rem; color: var(--text-muted); }
   .image-preview-empty:hover { border-color: var(--gold); }
   .upload-icon { font-size: 1.5rem; display: block; margin-bottom: 0.4rem; }
-  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; z-index: 999; }
+
+  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; z-index: 9999; }
   .toast.success { background: #065f46; color: white; }
   .toast.error { background: #b91c1c; color: white; }
+
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(3px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .modal { background: var(--cream-card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.25); animation: modalIn 0.18s ease; }
+  @keyframes modalIn { from { transform: scale(0.96) translateY(8px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+  .modal-header h2 { font-size: 1rem; font-weight: 700; color: var(--text); margin: 0; }
+  .modal-close { background: none; border: none; font-size: 1rem; color: var(--text-muted); cursor: pointer; padding: 0.25rem; transition: color 0.1s; }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.9rem; }
+  .modal-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .modal-field label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.3rem; }
+  .modal-field input[type="text"], .modal-field input[type="url"], .modal-field input[type="number"] { width: 100%; padding: 0.6rem 0.8rem; background: var(--cream); border: 1px solid var(--border); border-radius: 7px; font-size: 0.875rem; color: var(--text); outline: none; font-family: inherit; box-sizing: border-box; transition: border-color 0.15s, box-shadow 0.15s; }
+  .modal-field input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,146,42,0.1); }
+  .product-img-preview-empty { border: 2px dashed var(--border); border-radius: 8px; padding: 1.25rem; text-align: center; color: var(--text-muted); font-size: 0.82rem; transition: border-color 0.15s; cursor: pointer; }
+  .product-img-preview-empty span { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+  .product-img-preview-empty:hover { border-color: var(--gold); }
+  #product-img-preview img { width: 100%; max-height: 160px; object-fit: cover; border-radius: 8px; cursor: pointer; }
+  .modal-footer { display: flex; gap: 0.75rem; justify-content: flex-end; padding: 1rem 1.5rem; border-top: 1px solid var(--border); }
+  .modal-footer .btn-secondary, .modal-footer .btn-primary { display: inline-block; width: auto; }
 </style>
 
 <script>
+  // ── Editor setup ──
   const editor = document.getElementById('editor') as HTMLElement
   const contentInput = document.getElementById('content') as HTMLInputElement
 
   document.querySelectorAll('[data-cmd]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const cmd = (btn as HTMLElement).dataset.cmd
+      if (!cmd || cmd === 'inlineImage' || cmd === 'productCard') return
       editor.focus()
       switch (cmd) {
         case 'bold': document.execCommand('bold'); break
@@ -219,14 +403,6 @@ const currentCategoryId = post.categories?.[0]?._id ?? ''
   function syncContent() { contentInput.value = editor.innerHTML }
   editor?.addEventListener('input', syncContent)
 
-  const coverImageInput = document.getElementById('cover-image') as HTMLInputElement
-  const imagePreview = document.getElementById('image-preview') as HTMLElement
-  coverImageInput?.addEventListener('change', () => {
-    const file = coverImageInput.files?.[0]
-    if (!file) return
-    imagePreview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Cover preview" class="cover-preview" onclick="document.getElementById('cover-image').click()" />`
-  })
-
   function showToast(msg: string, type: 'success' | 'error') {
     const toast = document.getElementById('toast') as HTMLElement
     toast.textContent = msg
@@ -235,6 +411,337 @@ const currentCategoryId = post.categories?.[0]?._id ?? ''
     setTimeout(() => { toast.style.display = 'none' }, 3500)
   }
 
+  // ════════════════════════════════════════════
+  // RE-HYDRATE SAVED PRODUCT CARDS
+  // When the editor loads with saved HTML, any previously saved product cards
+  // will be plain HTML divs without their remove-button event listeners.
+  // We find them and re-attach the listeners so they're removable again.
+  // ════════════════════════════════════════════
+  function rehydrateSavedCards() {
+    editor.querySelectorAll('.inline-product-card').forEach((card) => {
+      // Re-attach remove button listener if it exists
+      const removeBtn = card.querySelector('.card-remove') as HTMLButtonElement | null
+      if (removeBtn && !removeBtn.dataset.hydrated) {
+        removeBtn.dataset.hydrated = '1'
+        removeBtn.addEventListener('click', () => {
+          card.remove()
+          syncContent()
+        })
+      }
+      // Make sure card is non-editable
+      ;(card as HTMLElement).contentEditable = 'false'
+    })
+  }
+
+  // Run on page load after editor content is set
+  rehydrateSavedCards()
+
+  // ════════════════════════════════════════════
+  // SHARED: upload image to Sanity via API
+  // ════════════════════════════════════════════
+  async function uploadImageToSanity(file: File): Promise<{ url: string; assetId: string }> {
+    const formData = new FormData()
+    formData.append('image', file)
+    const res = await fetch('/api/admin/upload-image', { method: 'POST', body: formData })
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.error || 'Upload failed')
+    }
+    return res.json()
+  }
+
+  // ════════════════════════════════════════════
+  // INLINE IMAGE UPLOAD
+  // ════════════════════════════════════════════
+  const inlineImgBtn = document.getElementById('inline-img-btn') as HTMLButtonElement
+  const inlineImgInput = document.getElementById('inline-image-input') as HTMLInputElement
+  const inlineImgProgress = document.getElementById('inline-img-progress') as HTMLElement
+  const inlineImgProgressLabel = document.getElementById('inline-img-progress-label') as HTMLElement
+  let savedRange: Range | null = null
+
+  inlineImgBtn?.addEventListener('click', () => {
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
+      savedRange = sel.getRangeAt(0).cloneRange()
+    } else {
+      savedRange = null
+    }
+    inlineImgInput.click()
+  })
+
+  inlineImgInput?.addEventListener('change', async () => {
+    const file = inlineImgInput.files?.[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image too large — max 5 MB', 'error')
+      inlineImgInput.value = ''
+      return
+    }
+
+    inlineImgBtn.classList.add('uploading')
+    inlineImgProgress.style.display = 'flex'
+    inlineImgProgressLabel.textContent = 'Uploading image…'
+
+    try {
+      const { url, assetId } = await uploadImageToSanity(file)
+
+      const img = document.createElement('img')
+      img.src = url
+      img.alt = file.name.replace(/\.[^.]+$/, '')
+      img.className = 'inline-img'
+      img.dataset.sanityAssetId = assetId
+
+      const sel = window.getSelection()
+      sel?.removeAllRanges()
+      if (savedRange) {
+        sel?.addRange(savedRange)
+        savedRange.deleteContents()
+        savedRange.insertNode(img)
+        savedRange.setStartAfter(img)
+        savedRange.collapse(true)
+        sel?.removeAllRanges()
+        sel?.addRange(savedRange)
+      } else {
+        editor.appendChild(img)
+      }
+
+      const p = document.createElement('p')
+      p.innerHTML = '<br>'
+      img.insertAdjacentElement('afterend', p)
+
+      syncContent()
+      inlineImgProgressLabel.textContent = 'Image inserted ✓'
+      setTimeout(() => { inlineImgProgress.style.display = 'none' }, 1500)
+    } catch (err: any) {
+      showToast(err.message || 'Image upload failed', 'error')
+      inlineImgProgress.style.display = 'none'
+    } finally {
+      inlineImgBtn.classList.remove('uploading')
+      inlineImgInput.value = ''
+    }
+  })
+
+  // Drag-and-drop
+  editor?.addEventListener('dragover', (e) => { e.preventDefault(); editor.style.borderColor = 'var(--gold)' })
+  editor?.addEventListener('dragleave', () => { editor.style.borderColor = '' })
+  editor?.addEventListener('drop', async (e) => {
+    e.preventDefault()
+    editor.style.borderColor = ''
+    const files = Array.from(e.dataTransfer?.files ?? []).filter(f => f.type.startsWith('image/'))
+    for (const file of files) {
+      const dt = new DataTransfer()
+      dt.items.add(file)
+      inlineImgInput.files = dt.files
+      const sel = window.getSelection()
+      if (sel && sel.rangeCount > 0) savedRange = sel.getRangeAt(0).cloneRange()
+      inlineImgInput.dispatchEvent(new Event('change'))
+    }
+  })
+
+  // ════════════════════════════════════════════
+  // PRODUCT CARD MODAL
+  // ════════════════════════════════════════════
+  const productCardBtn = document.getElementById('product-card-btn') as HTMLButtonElement
+  const modalOverlay = document.getElementById('product-modal-overlay') as HTMLElement
+  const modalClose = document.getElementById('modal-close') as HTMLButtonElement
+  const modalCancel = document.getElementById('modal-cancel') as HTMLButtonElement
+  const modalInsert = document.getElementById('modal-insert') as HTMLButtonElement
+  const productImgInput = document.getElementById('product-img-input') as HTMLInputElement
+  const productImgPreview = document.getElementById('product-img-preview') as HTMLElement
+  const productImgProgress = document.getElementById('product-img-progress') as HTMLElement
+  const productImgProgressLabel = document.getElementById('product-img-progress-label') as HTMLElement
+
+  let productCardRange: Range | null = null
+  let uploadedProductImageUrl = ''
+  let uploadedProductAssetId = ''
+
+  productCardBtn?.addEventListener('click', () => {
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
+      productCardRange = sel.getRangeAt(0).cloneRange()
+    } else {
+      productCardRange = null
+    }
+    openModal()
+  })
+
+  function openModal() {
+    modalOverlay.style.display = 'flex'
+    document.body.style.overflow = 'hidden'
+    ;(document.getElementById('p-name') as HTMLInputElement).value = ''
+    ;(document.getElementById('p-badge') as HTMLInputElement).value = ''
+    ;(document.getElementById('p-price-inr') as HTMLInputElement).value = ''
+    ;(document.getElementById('p-price-usd') as HTMLInputElement).value = ''
+    ;(document.getElementById('p-rating') as HTMLInputElement).value = ''
+    ;(document.getElementById('p-rating-count') as HTMLInputElement).value = ''
+    ;(document.getElementById('p-india-link') as HTMLInputElement).value = ''
+    ;(document.getElementById('p-global-link') as HTMLInputElement).value = ''
+    productImgPreview.innerHTML = `<div class="product-img-preview-empty" onclick="document.getElementById('product-img-input').click()"><span>📦</span><p>Click to upload product image</p></div>`
+    uploadedProductImageUrl = ''
+    uploadedProductAssetId = ''
+    modalInsert.disabled = true
+    productImgProgress.style.display = 'none'
+  }
+
+  function closeModal() {
+    modalOverlay.style.display = 'none'
+    document.body.style.overflow = ''
+  }
+
+  modalClose?.addEventListener('click', closeModal)
+  modalCancel?.addEventListener('click', closeModal)
+  modalOverlay?.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal() })
+
+  function checkModalReady() {
+    const name = (document.getElementById('p-name') as HTMLInputElement).value.trim()
+    const india = (document.getElementById('p-india-link') as HTMLInputElement).value.trim()
+    const global = (document.getElementById('p-global-link') as HTMLInputElement).value.trim()
+    modalInsert.disabled = !(name && india && global)
+  }
+  document.getElementById('p-name')?.addEventListener('input', checkModalReady)
+  document.getElementById('p-india-link')?.addEventListener('input', checkModalReady)
+  document.getElementById('p-global-link')?.addEventListener('input', checkModalReady)
+
+  productImgInput?.addEventListener('change', async () => {
+    const file = productImgInput.files?.[0]
+    if (!file) return
+    productImgProgress.style.display = 'flex'
+    productImgProgressLabel.textContent = 'Uploading…'
+    try {
+      const { url, assetId } = await uploadImageToSanity(file)
+      uploadedProductImageUrl = url
+      uploadedProductAssetId = assetId
+      productImgPreview.innerHTML = `<img src="${url}" alt="Product preview" onclick="document.getElementById('product-img-input').click()" />`
+      productImgProgressLabel.textContent = 'Uploaded ✓'
+      setTimeout(() => { productImgProgress.style.display = 'none' }, 1500)
+    } catch (err: any) {
+      showToast(err.message || 'Product image upload failed', 'error')
+      productImgProgress.style.display = 'none'
+    } finally {
+      productImgInput.value = ''
+    }
+  })
+
+  modalInsert?.addEventListener('click', () => {
+    const name = (document.getElementById('p-name') as HTMLInputElement).value.trim()
+    const badge = (document.getElementById('p-badge') as HTMLInputElement).value.trim()
+    const priceInr = (document.getElementById('p-price-inr') as HTMLInputElement).value.trim()
+    const priceUsd = (document.getElementById('p-price-usd') as HTMLInputElement).value.trim()
+    const rating = parseFloat((document.getElementById('p-rating') as HTMLInputElement).value) || 0
+    const ratingCount = (document.getElementById('p-rating-count') as HTMLInputElement).value.trim()
+    const indiaLink = (document.getElementById('p-india-link') as HTMLInputElement).value.trim()
+    const globalLink = (document.getElementById('p-global-link') as HTMLInputElement).value.trim()
+
+    const cardEl = buildProductCardElement({
+      name, badge, priceInr, priceUsd, rating, ratingCount,
+      indiaLink, globalLink,
+      imageUrl: uploadedProductImageUrl,
+      assetId: uploadedProductAssetId,
+    })
+
+    const sel = window.getSelection()
+    sel?.removeAllRanges()
+    if (productCardRange) {
+      sel?.addRange(productCardRange)
+      productCardRange.deleteContents()
+      productCardRange.insertNode(cardEl)
+      productCardRange.setStartAfter(cardEl)
+      productCardRange.collapse(true)
+      sel?.removeAllRanges()
+      sel?.addRange(productCardRange)
+    } else {
+      editor.appendChild(cardEl)
+    }
+
+    const p = document.createElement('p')
+    p.innerHTML = '<br>'
+    cardEl.insertAdjacentElement('afterend', p)
+
+    syncContent()
+    closeModal()
+  })
+
+  // ── Build product card DOM element ──
+  function buildProductCardElement(data: {
+    name: string; badge: string; priceInr: string; priceUsd: string;
+    rating: number; ratingCount: string; indiaLink: string; globalLink: string;
+    imageUrl: string; assetId: string;
+  }) {
+    const card = document.createElement('div')
+    card.className = 'inline-product-card'
+    card.contentEditable = 'false'
+    card.dataset.productCard = JSON.stringify({
+      name: data.name, badge: data.badge,
+      priceInr: data.priceInr ? parseFloat(data.priceInr) : null,
+      priceUsd: data.priceUsd ? parseFloat(data.priceUsd) : null,
+      rating: data.rating || null,
+      ratingCount: data.ratingCount ? parseInt(data.ratingCount) : null,
+      indiaLink: data.indiaLink, globalLink: data.globalLink,
+      imageUrl: data.imageUrl, assetId: data.assetId,
+    })
+
+    const removeBtn = document.createElement('button')
+    removeBtn.type = 'button'
+    removeBtn.className = 'card-remove'
+    removeBtn.dataset.hydrated = '1'
+    removeBtn.title = 'Remove product card'
+    removeBtn.innerHTML = '✕'
+    removeBtn.addEventListener('click', () => { card.remove(); syncContent() })
+
+    const imgEl = data.imageUrl
+      ? (() => { const i = document.createElement('img'); i.src = data.imageUrl; i.alt = data.name; i.className = 'card-img'; return i })()
+      : (() => { const d = document.createElement('div'); d.className = 'card-img-placeholder'; d.textContent = '📦'; return d })()
+
+    const info = document.createElement('div')
+    info.className = 'card-info'
+
+    if (data.badge) {
+      const b = document.createElement('span'); b.className = 'card-badge'; b.textContent = data.badge; info.appendChild(b)
+    }
+    const nameEl = document.createElement('div'); nameEl.className = 'card-name'; nameEl.textContent = data.name; info.appendChild(nameEl)
+
+    if (data.rating) {
+      const r = document.createElement('div'); r.className = 'card-rating'
+      r.innerHTML = `<span class="stars">${renderStars(data.rating)}</span> <span>${data.rating.toFixed(1)}</span>${data.ratingCount ? ` <span>(${parseInt(data.ratingCount).toLocaleString()})</span>` : ''}`
+      info.appendChild(r)
+    }
+
+    if (data.priceInr || data.priceUsd) {
+      const prices = document.createElement('div'); prices.className = 'card-prices'
+      if (data.priceInr) { const s = document.createElement('span'); s.className = 'card-price-inr'; s.textContent = `₹${parseFloat(data.priceInr).toLocaleString('en-IN')}`; prices.appendChild(s) }
+      if (data.priceUsd) { const s = document.createElement('span'); s.className = 'card-price-usd'; s.textContent = `$${parseFloat(data.priceUsd).toFixed(2)}`; prices.appendChild(s) }
+      info.appendChild(prices)
+    }
+
+    const btns = document.createElement('div'); btns.className = 'card-btns'
+    const indiaBtn = document.createElement('a'); indiaBtn.href = data.indiaLink; indiaBtn.target = '_blank'; indiaBtn.rel = 'noopener noreferrer sponsored'; indiaBtn.className = 'card-btn-india'; indiaBtn.innerHTML = '🇮🇳 Buy on Amazon.in'; btns.appendChild(indiaBtn)
+    const globalBtn = document.createElement('a'); globalBtn.href = data.globalLink; globalBtn.target = '_blank'; globalBtn.rel = 'noopener noreferrer sponsored'; globalBtn.className = 'card-btn-global'; globalBtn.innerHTML = '🌍 Amazon Global'; btns.appendChild(globalBtn)
+    info.appendChild(btns)
+
+    const disc = document.createElement('p'); disc.className = 'card-disclosure'; disc.textContent = '* Affiliate links — we may earn a commission at no extra cost to you.'; info.appendChild(disc)
+
+    card.appendChild(removeBtn); card.appendChild(imgEl); card.appendChild(info)
+    return card
+  }
+
+  function renderStars(rating: number): string {
+    const full = Math.floor(rating)
+    const half = rating % 1 >= 0.5 ? 1 : 0
+    const empty = 5 - full - half
+    return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(empty)
+  }
+
+  // ── Cover image preview ──
+  const coverImageInput = document.getElementById('cover-image') as HTMLInputElement
+  const imagePreview = document.getElementById('image-preview') as HTMLElement
+  coverImageInput?.addEventListener('change', () => {
+    const file = coverImageInput.files?.[0]
+    if (!file) return
+    imagePreview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Cover preview" class="cover-preview" onclick="document.getElementById('cover-image').click()" />`
+  })
+
+  // ── Form submit ──
   const form = document.getElementById('post-form') as HTMLFormElement
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement
 

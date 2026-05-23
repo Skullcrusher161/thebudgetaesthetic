@@ -1,5 +1,6 @@
 // src/pages/api/admin/posts/save.ts
-// Creates a new post in Sanity, uploads cover image if provided
+// Creates a new post in Sanity, uploads cover image if provided,
+// and extracts inline product cards from editor HTML content.
 export const prerender = false
 
 import type { APIRoute } from 'astro'
@@ -12,6 +13,41 @@ const sanity = createClient({
   token: import.meta.env.SANITY_WRITE_TOKEN,
   useCdn: false,
 })
+
+// ─── Parse product cards out of raw editor HTML ───────────────────────────
+// The editor stores product cards as <div data-product-card='{"name":...}'> nodes.
+// We extract them here and store as proper Sanity affiliate product objects.
+function extractProductCards(html: string): Array<{
+  name: string
+  badge?: string
+  priceInr?: number
+  priceUsd?: number
+  rating?: number
+  ratingCount?: number
+  indiaLink: string
+  globalLink: string
+  imageUrl?: string
+  assetId?: string
+}> {
+  const cards: any[] = []
+  // Match data-product-card="..." (both quote styles)
+  const re = /data-product-card='([^']+)'/g
+  let m
+  while ((m = re.exec(html)) !== null) {
+    try {
+      cards.push(JSON.parse(m[1]))
+    } catch { /* skip malformed */ }
+  }
+  // Also try double-quote variant
+  const re2 = /data-product-card="([^"]+)"/g
+  while ((m = re2.exec(html)) !== null) {
+    try {
+      // JSON inside an HTML attribute will have &quot; escaped
+      cards.push(JSON.parse(m[1].replace(/&quot;/g, '"')))
+    } catch { /* skip malformed */ }
+  }
+  return cards
+}
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -32,7 +68,7 @@ export const POST: APIRoute = async ({ request }) => {
       })
     }
 
-    // Upload cover image to Sanity if provided
+    // ── Upload cover image if provided ──
     let coverImageAsset = null
     if (coverImageFile && coverImageFile.size > 0) {
       const buffer = await coverImageFile.arrayBuffer()
@@ -43,27 +79,59 @@ export const POST: APIRoute = async ({ request }) => {
       coverImageAsset = {
         _type: 'image',
         asset: { _type: 'reference', _ref: asset._id },
+        alt: title,
       }
     }
 
-    // Build post document
+    // ── Extract inline product cards from editor HTML ──
+    const productCards = extractProductCards(content)
+
+    // Build affiliateProducts array for Sanity
+    // Images were already uploaded to Sanity by the modal's upload step,
+    // so we just need to reference the assetId.
+    const affiliateProducts = productCards.map((card, i) => {
+      const product: any = {
+        _key: `product_${Date.now()}_${i}`,
+        name: card.name,
+        indiaLink: card.indiaLink,
+        globalLink: card.globalLink,
+      }
+      if (card.badge) product.badge = card.badge
+      if (card.priceInr) { product.price = card.priceInr; product.currency = 'INR' }
+      if (card.priceUsd && !card.priceInr) { product.price = card.priceUsd; product.currency = 'USD' }
+      if (card.rating) product.rating = card.rating
+      if (card.ratingCount) product.ratingCount = card.ratingCount
+      if (card.assetId) {
+        product.productImage = {
+          _type: 'image',
+          asset: { _type: 'reference', _ref: card.assetId },
+          alt: card.name,
+        }
+      }
+      return product
+    })
+
+    // ── Build post document ──
     const postDoc: any = {
       _type: 'post',
       title,
       slug: { _type: 'slug', current: slug },
-      // Store HTML content as a simple text field
-      // (your existing post schema may use body/content — adjust field name if needed)
-      body: content,
+      content,           // raw HTML; used for display
       excerpt,
       published,
+      publishedAt: new Date().toISOString(),
+    }
+
+    if (affiliateProducts.length > 0) {
+      postDoc.affiliateProducts = affiliateProducts
     }
 
     if (categoryId) {
-      postDoc.category = { _type: 'reference', _ref: categoryId }
+      postDoc.categories = [{ _type: 'reference', _ref: categoryId, _key: categoryId }]
     }
 
     if (coverImageAsset) {
-      postDoc.coverImage = coverImageAsset
+      postDoc.heroImage = coverImageAsset
     }
 
     const created = await sanity.create(postDoc)
