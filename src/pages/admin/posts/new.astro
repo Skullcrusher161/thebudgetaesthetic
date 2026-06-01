@@ -338,6 +338,7 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     background: var(--cream-card); border: 1px solid var(--border);
     border-radius: 0 0 8px 8px; font-size: 0.93rem;
     line-height: 1.7; outline: none; color: var(--text);
+    overflow: hidden;
   }
   .editor-body:focus { border-color: var(--gold); }
   .editor-body h2 { font-size: 1.3rem; font-weight: 700; margin: 1rem 0 0.5rem; }
@@ -348,19 +349,46 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
   .editor-body a { color: var(--gold); }
 
   /* ── Inline images ── */
-  .editor-body img.inline-img {
-    max-width: 100%; border-radius: 6px; display: block;
-    margin: 0.75rem 0; cursor: pointer;
+  .inline-img-wrapper {
+    position: relative;
+    display: block;
+    max-width: 100%;
+    width: fit-content;
+    margin: 0.75rem 0;
+  }
+  .editor-body .inline-img-wrapper img.inline-img {
+    display: block;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    border-radius: 6px;
+    cursor: pointer;
     border: 2px solid transparent; transition: border-color 0.15s;
   }
-  .editor-body img.inline-img:hover { border-color: var(--gold); }
+  .editor-body .inline-img-wrapper:hover img.inline-img { border-color: var(--gold); }
+
+  .inline-img-remove {
+    position: absolute; top: 0.35rem; right: 0.35rem;
+    background: #b91c1c; color: white;
+    border: none; border-radius: 50%;
+    width: 22px; height: 22px;
+    font-size: 0.65rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .inline-img-wrapper:hover .inline-img-remove { opacity: 1; }
+
+  /* While composing keep images at 45% max */
+  .editor-body.editing .inline-img-wrapper {
+    max-width: 45%;
+  }
 
   /* ════════════════════════════════
      INLINE PRODUCT CARD (in editor)
   ════════════════════════════════ */
-  .editor-body .inline-product-card {
-    display: grid;
-    grid-template-columns: 120px 1fr;
+  :global(.inline-product-card) {
+    display: flex;
+    flex-direction: row;
     gap: 1rem;
     background: var(--cream);
     border: 1px solid var(--border);
@@ -368,16 +396,21 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     padding: 1rem;
     margin: 1rem 0;
     position: relative;
-    contenteditable: false;
     user-select: none;
     cursor: default;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    align-items: flex-start;
   }
+  :global(.inline-product-card) > * { min-width: 0; }
 
-  .editor-body .inline-product-card:hover {
+  :global(.inline-product-card:hover) {
     border-color: var(--gold);
   }
 
-  .editor-body .inline-product-card .card-remove {
+  :global(.inline-product-card .card-remove) {
     position: absolute;
     top: 0.5rem; right: 0.5rem;
     background: #b91c1c; color: white;
@@ -387,15 +420,15 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     display: flex; align-items: center; justify-content: center;
     opacity: 0; transition: opacity 0.15s;
   }
-  .editor-body .inline-product-card:hover .card-remove { opacity: 1; }
+  :global(.inline-product-card:hover .card-remove) { opacity: 1; }
 
-  .editor-body .inline-product-card .card-img {
-    width: 120px; height: 120px;
+  :global(.inline-product-card .card-img) {
+    width: 120px; height: 120px; max-width: 100%;
     object-fit: cover; border-radius: 8px;
-    display: block;
+    display: block; box-sizing: border-box;
   }
 
-  .editor-body .inline-product-card .card-img-placeholder {
+  :global(.inline-product-card .card-img-placeholder) {
     width: 120px; height: 120px;
     background: var(--cream-card);
     border-radius: 8px;
@@ -403,11 +436,12 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     font-size: 2rem; color: var(--text-muted);
   }
 
-  .editor-body .inline-product-card .card-info {
+  :global(.inline-product-card .card-info) {
     display: flex; flex-direction: column; gap: 0.35rem;
+    flex: 1; min-width: 0;
   }
 
-  .editor-body .inline-product-card .card-badge {
+  :global(.inline-product-card .card-badge) {
     display: inline-block;
     background: var(--gold);
     color: white;
@@ -420,42 +454,42 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     width: fit-content;
   }
 
-  .editor-body .inline-product-card .card-name {
+  :global(.inline-product-card .card-name) {
     font-size: 0.92rem;
     font-weight: 600;
     color: var(--text);
     line-height: 1.3;
   }
 
-  .editor-body .inline-product-card .card-rating {
+  :global(.inline-product-card .card-rating) {
     display: flex; align-items: center; gap: 0.3rem;
     font-size: 0.78rem; color: var(--text-muted);
   }
 
-  .editor-body .inline-product-card .card-rating .stars {
+  :global(.inline-product-card .card-rating .stars) {
     color: #f59e0b;
     letter-spacing: -1px;
   }
 
-  .editor-body .inline-product-card .card-prices {
+  :global(.inline-product-card .card-prices) {
     display: flex; gap: 0.75rem;
     font-size: 0.8rem;
   }
 
-  .editor-body .inline-product-card .card-price-inr {
+  :global(.inline-product-card .card-price-inr) {
     font-weight: 700; color: var(--text);
   }
 
-  .editor-body .inline-product-card .card-price-usd {
+  :global(.inline-product-card .card-price-usd) {
     color: var(--text-muted);
   }
 
-  .editor-body .inline-product-card .card-btns {
+  :global(.inline-product-card .card-btns) {
     display: flex; gap: 0.5rem; margin-top: 0.25rem;
     flex-wrap: wrap;
   }
 
-  .editor-body .inline-product-card .card-btn-india {
+  :global(.inline-product-card .card-btn-india) {
     display: inline-flex; align-items: center; gap: 0.3rem;
     padding: 0.35rem 0.75rem;
     background: #ff9900;
@@ -465,7 +499,7 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     font-family: inherit;
   }
 
-  .editor-body .inline-product-card .card-btn-global {
+  :global(.inline-product-card .card-btn-global) {
     display: inline-flex; align-items: center; gap: 0.3rem;
     padding: 0.35rem 0.75rem;
     background: var(--cream-card); color: var(--text);
@@ -475,7 +509,7 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     font-family: inherit;
   }
 
-  .editor-body .inline-product-card .card-disclosure {
+  :global(.inline-product-card .card-disclosure) {
     font-size: 0.65rem; color: var(--text-muted);
     margin-top: 0.2rem;
   }
@@ -526,6 +560,24 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
   .image-preview-empty:hover { border-color: var(--gold); }
   .upload-icon { font-size: 1.5rem; display: block; margin-bottom: 0.4rem; }
   #image-preview img { width: 100%; border-radius: 6px; display: block; cursor: pointer; }
+
+  .cover-img-wrapper {
+    position: relative;
+  }
+  .cover-img-remove {
+    position: absolute; top: 0.4rem; right: 0.4rem;
+    background: #b91c1c; color: white;
+    border: none; border-radius: 50%;
+    width: 24px; height: 24px;
+    font-size: 0.65rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .cover-img-wrapper:hover .cover-img-remove { opacity: 1; }
+
+  /* Cover preview sizing for compose vs preview modes */
+  #image-preview.image-preview-small img { max-height: 120px; object-fit: cover; }
+  #image-preview.image-preview-large img { max-height: 420px; object-fit: cover; }
 
   /* Toast */
   .toast {
@@ -650,6 +702,9 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
   const editor = document.getElementById('editor') as HTMLElement
   const contentInput = document.getElementById('content') as HTMLInputElement
 
+  // Start in "editing" mode so images stay compact while composing
+  editor?.classList.add('editing')
+
   document.querySelectorAll('[data-cmd]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const cmd = (btn as HTMLElement).dataset.cmd
@@ -742,24 +797,38 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
       img.className = 'inline-img'
       img.dataset.sanityAssetId = assetId
 
+      const wrapper = document.createElement('div')
+      wrapper.className = 'inline-img-wrapper'
+      wrapper.contentEditable = 'false'
+
+      const removeBtn = document.createElement('button')
+      removeBtn.type = 'button'
+      removeBtn.className = 'inline-img-remove'
+      removeBtn.title = 'Remove image'
+      removeBtn.innerHTML = '✕'
+      removeBtn.addEventListener('click', () => { wrapper.remove(); syncContent() })
+
+      wrapper.appendChild(img)
+      wrapper.appendChild(removeBtn)
+
       const sel = window.getSelection()
       sel?.removeAllRanges()
 
       if (savedRange) {
         sel?.addRange(savedRange)
         savedRange.deleteContents()
-        savedRange.insertNode(img)
-        savedRange.setStartAfter(img)
+        savedRange.insertNode(wrapper)
+        savedRange.setStartAfter(wrapper)
         savedRange.collapse(true)
         sel?.removeAllRanges()
         sel?.addRange(savedRange)
       } else {
-        editor.appendChild(img)
+        editor.appendChild(wrapper)
       }
 
       const p = document.createElement('p')
       p.innerHTML = '<br>'
-      img.insertAdjacentElement('afterend', p)
+      wrapper.insertAdjacentElement('afterend', p)
 
       syncContent()
       inlineImgProgressLabel.textContent = 'Image inserted ✓'
@@ -875,7 +944,7 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
       const { url, assetId } = await uploadImageToSanity(file)
       uploadedProductImageUrl = url
       uploadedProductAssetId = assetId
-      productImgPreview.innerHTML = `<img src="${url}" alt="Product preview" onclick="document.getElementById('product-img-input').click()" />`
+      productImgPreview.innerHTML = `<img src="${url}" alt="Product preview" onclick="document.getElementById('product-img-input').click()" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;cursor:pointer;" />`
       productImgProgressLabel.textContent = 'Uploaded ✓'
       setTimeout(() => { productImgProgress.style.display = 'none' }, 1500)
     } catch (err: any) {
@@ -960,7 +1029,7 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
       assetId: data.assetId,
     })
 
-    // Remove button
+    // Remove button — placed inside a wrapper so it is NOT a direct grid child
     const removeBtn = document.createElement('button')
     removeBtn.type = 'button'
     removeBtn.className = 'card-remove'
@@ -970,11 +1039,29 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
       card.remove()
       syncContent()
     })
+    card.appendChild(removeBtn)
 
-    // Image
+    // Image column wrapper — keeps image + its own children out of the outer grid flow
+    const imgCol = document.createElement('div')
+    imgCol.style.cssText = 'width:120px;flex-shrink:0;'
+
     const imgEl = data.imageUrl
-      ? (() => { const i = document.createElement('img'); i.src = data.imageUrl; i.alt = data.name; i.className = 'card-img'; return i })()
+      ? (() => {
+          const i = document.createElement('img')
+          i.src = data.imageUrl
+          i.alt = data.name
+          i.className = 'card-img'
+          i.style.width = '120px'
+          i.style.height = '120px'
+          i.style.maxWidth = '100%'
+          i.style.objectFit = 'cover'
+          i.style.borderRadius = '8px'
+          i.style.display = 'block'
+          i.style.boxSizing = 'border-box'
+          return i
+        })()
       : (() => { const d = document.createElement('div'); d.className = 'card-img-placeholder'; d.textContent = '📦'; return d })()
+    imgCol.appendChild(imgEl)
 
     // Info column
     const info = document.createElement('div')
@@ -1044,8 +1131,7 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     disclosure.textContent = '* Affiliate links — we may earn a commission at no extra cost to you.'
     info.appendChild(disclosure)
 
-    card.appendChild(removeBtn)
-    card.appendChild(imgEl)
+    card.appendChild(imgCol)
     card.appendChild(info)
 
     return card
@@ -1061,11 +1147,28 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
   // ── Cover image preview ──
   const coverImageInput = document.getElementById('cover-image') as HTMLInputElement
   const imagePreview = document.getElementById('image-preview') as HTMLElement
+  function resetCoverImage() {
+    coverImageInput.value = ''
+    imagePreview.className = 'image-preview-empty'
+    imagePreview.removeAttribute('onclick')
+    imagePreview.innerHTML = `<span class="upload-icon">📷</span><p>Click to upload cover image</p><p class="field-hint">JPG, PNG, WebP — max 5MB</p>`
+    imagePreview.onclick = () => coverImageInput.click()
+  }
+
   coverImageInput?.addEventListener('change', () => {
     const file = coverImageInput.files?.[0]
     if (!file) return
     const url = URL.createObjectURL(file)
-    imagePreview.innerHTML = `<img src="${url}" alt="Cover preview" onclick="document.getElementById('cover-image').click()" />`
+    imagePreview.className = 'cover-img-wrapper image-preview-small'
+    imagePreview.removeAttribute('onclick')
+    imagePreview.innerHTML = `
+      <img src="${url}" alt="Cover preview" style="max-height:120px;object-fit:cover" onclick="document.getElementById('cover-image').click()" />
+      <button type="button" class="cover-img-remove" title="Remove cover image">✕</button>
+    `
+    imagePreview.querySelector('.cover-img-remove')?.addEventListener('click', (e) => {
+      e.stopPropagation()
+      resetCoverImage()
+    })
   })
 
   // ── Form submission ──
@@ -1086,8 +1189,21 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
       const result = await res.json()
 
       if (res.ok) {
-        showToast('Post saved!', 'success')
-        setTimeout(() => { window.location.href = `/admin/posts/edit/${result.id}` }, 800)
+          showToast('Post saved!', 'success')
+          // switch editor and previews out of editing mode so images enlarge for preview
+          editor?.classList.remove('editing')
+          // remove 'editing' marker and inline editing styles from inline images so CSS allows full width
+          document.querySelectorAll('.inline-img-wrapper img.inline-img').forEach((i) => {
+            const img = i as HTMLElement
+            img.style.maxWidth = ''
+            img.style.transition = ''
+          })
+          // reset cover preview sizing (remove small limit and allow large preview)
+          imagePreview.classList.remove('image-preview-small')
+          imagePreview.classList.add('image-preview-large')
+          const covImg2 = imagePreview.querySelector('img') as HTMLElement | null
+          if (covImg2) covImg2.style.maxHeight = ''
+          setTimeout(() => { window.location.href = `/admin/posts/edit/${result.id}` }, 800)
       } else {
         showToast(result.error || 'Failed to save post', 'error')
         submitBtn.disabled = false
