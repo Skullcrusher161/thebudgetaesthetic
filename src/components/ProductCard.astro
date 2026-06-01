@@ -1,23 +1,41 @@
 ---
-import { buildAffiliateUrls, AFFILIATE_SWAP_SCRIPT } from "../lib/affiliateUrl.js";
+import { buildAffiliateUrls } from "../lib/affiliateUrl.js";
 import { productImageUrl } from "../lib/sanity.js";
 
 interface Props {
-  name:         string;
-  productImage: any;
-  indiaLink:    string;
-  globalLink:   string;
-  price:        number;
-  currency:     "INR" | "USD" | "GBP";
-  rating:       number;
-  ratingCount?: number;
-  badge?:       string;
-  index?:       number;
+  name:                  string;
+  productImage:          any;
+  indiaLink?:            string;
+  globalLink?:           string;
+  affiliateUrlIndia?:    string; // Schema compatibility
+  affiliateUrlGlobal?:   string; // Schema compatibility
+  price:                 number;
+  currency:              "INR" | "USD" | "GBP";
+  rating:                number;
+  ratingCount?:          number;
+  badge?:                string;
+  index?:                number;
 }
 
-const { name, productImage, indiaLink, globalLink, price, currency = "INR", rating, ratingCount, badge, index = 0 } = Astro.props;
+const {
+  name,
+  productImage,
+  indiaLink,
+  globalLink,
+  affiliateUrlIndia,
+  affiliateUrlGlobal,
+  price,
+  currency = "INR",
+  rating,
+  ratingCount,
+  badge,
+  index = 0
+} = Astro.props;
 
-const urls   = buildAffiliateUrls(indiaLink, globalLink);
+const actualIndiaLink = affiliateUrlIndia || indiaLink || "";
+const actualGlobalLink = affiliateUrlGlobal || globalLink || "";
+
+const urls   = buildAffiliateUrls(actualIndiaLink, actualGlobalLink);
 const imgUrl = productImage ? productImageUrl(productImage, 480) : null;
 const alt    = productImage?.alt || name;
 
@@ -30,42 +48,42 @@ const delay = `${index * 80}ms`;
 ---
 
 <article
-  class="group glass rounded-2xl overflow-hidden flex flex-col animate-fade-up"
+  class="group glass rounded-2xl overflow-hidden flex flex-col animate-fade-up border border-white/5 hover:border-accent/30 transition-all duration-300 shadow-md hover:shadow-accent/5"
   style={`animation-delay: ${delay}`}
   itemscope itemtype="https://schema.org/Product"
 >
-  <!-- Image -->
-  <div class="relative overflow-hidden bg-mist aspect-square">
+  <!-- Image Container -->
+  <div class="relative overflow-hidden bg-zinc-950 aspect-square border-b border-white/5">
     {imgUrl ? (
       <img src={imgUrl} alt={alt} itemprop="image" width="480" height="480"
            loading="lazy" decoding="async"
            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 rounded-none"/>
     ) : (
-      <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate to-ink/80">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(79,124,255,0.4)" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-900 to-black">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(0,240,255,0.4)" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
       </div>
     )}
 
     {badge && (
-      <span class="absolute top-3 left-3 badge bg-amber text-ink text-[10px] uppercase tracking-wide shadow-md z-10 font-semibold">
+      <span class="absolute top-3 left-3 bg-neon-pink text-black text-[9px] uppercase tracking-wider shadow-md z-10 font-bold px-2 py-0.5 rounded">
         {badge}
       </span>
     )}
 
-    <!-- Rating overlay -->
+    <!-- Rating Overlay -->
     <div class="absolute bottom-3 left-3 right-3">
-      <div class="glass rounded-full px-3 py-1.5 flex items-center gap-1.5 w-fit">
-        <span class="flex gap-0.5" aria-label={`${rating} out of 5`}>
+      <div class="bg-black/85 backdrop-blur-md border border-white/10 rounded-full px-3 py-1 flex items-center gap-1.5 w-fit">
+        <span class="flex gap-0.5" aria-label={`${rating} out of 5 stars`}>
           {Array.from({ length: full }).map(() => (
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="#E8A842"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="#e8a842"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>
           ))}
-          {half && <svg width="10" height="10" viewBox="0 0 12 12" fill="#E8A842" opacity="0.5"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>}
+          {half && <svg width="10" height="10" viewBox="0 0 12 12" fill="#e8a842" opacity="0.5"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>}
           {Array.from({ length: empty }).map(() => (
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="#D4D9EC"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="rgba(255,255,255,0.15)"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>
           ))}
         </span>
-        <span class="text-xs font-medium text-ink/80">{rating.toFixed(1)}</span>
-        {ratingCount && <span class="text-[10px] text-slate/50">({ratingCount.toLocaleString()})</span>}
+        <span class="text-xs font-semibold text-white/90">{rating.toFixed(1)}</span>
+        {ratingCount && <span class="text-[9px] text-zinc-500">({ratingCount.toLocaleString()})</span>}
       </div>
     </div>
   </div>
@@ -74,12 +92,12 @@ const delay = `${index * 80}ms`;
   <div class="p-4 flex flex-col gap-3 flex-1">
     <h3 class="font-display font-bold text-sm text-ink leading-snug line-clamp-2" itemprop="name">{name}</h3>
 
-    <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-      <span class="text-xl font-display font-bold text-ink" itemprop="price" content={price.toString()}>
+    <div itemprop="offers" itemscope itemtype="https://schema.org/Offer" class="flex items-baseline gap-1">
+      <span class="text-xl font-display font-bold text-accent" itemprop="price" content={price.toString()}>
         {fmt(price, currency)}
       </span>
       <meta itemprop="priceCurrency" content={currency}/>
-      <span class="text-xs text-slate/40 ml-1 font-body">on Amazon</span>
+      <span class="text-[10px] text-slate/50 font-body">on Amazon</span>
     </div>
 
     <a
@@ -88,18 +106,62 @@ const delay = `${index * 80}ms`;
       data-url-in={urls.in}
       data-url-global={urls.global}
       target="_blank"
-      rel="noopener noreferrer sponsored"
-      class="btn-electric w-full justify-center mt-auto text-xs"
+      rel="noopener noreferrer nofollow"
+      class="btn-accent w-full justify-center mt-auto text-xs py-2 px-4 flex items-center gap-1.5"
       aria-label={`Check price of ${name} on Amazon`}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       Check Price on Amazon
     </a>
 
-    <p class="text-[10px] text-slate/35 text-center leading-relaxed">
+    <p class="text-[9px] text-zinc-500 text-center leading-relaxed font-mono">
       Affiliate link · Price may vary · Earns a small commission.
     </p>
   </div>
 </article>
 
-<script set:html={AFFILIATE_SWAP_SCRIPT}/>
+<script is:inline>
+  (async function() {
+    function swapLinks(isIndia) {
+      document.querySelectorAll('[data-affiliate]').forEach(function(el) {
+        var inUrl = el.getAttribute('data-url-in');
+        var globalUrl = el.getAttribute('data-url-global');
+        if (inUrl && globalUrl) {
+          el.href = isIndia ? inUrl : globalUrl;
+        }
+      });
+    }
+
+    // 1. Check existing cookie
+    var cookieMatch = document.cookie.split('; ').find(row => row.startsWith('tba_region='));
+    if (cookieMatch) {
+      var region = cookieMatch.split('=')[1];
+      swapLinks(region === 'IN');
+      return;
+    }
+
+    // 2. Direct Indian timezone detection (fast instant swap)
+    var isIndianTime = false;
+    try {
+      isIndianTime = Intl.DateTimeFormat().resolvedOptions().timeZone === 'Asia/Kolkata';
+    } catch(e) {}
+
+    if (isIndianTime) {
+      document.cookie = "tba_region=IN; path=/; max-age=604800";
+      swapLinks(true);
+    }
+
+    // 3. Fallback async IP API lookup
+    try {
+      var res = await fetch('https://ipapi.co/json/');
+      if (res.ok) {
+        var data = await res.json();
+        var isIndia = data.country_code === 'IN';
+        document.cookie = "tba_region=" + (isIndia ? "IN" : "GL") + "; path=/; max-age=604800";
+        swapLinks(isIndia);
+      }
+    } catch(err) {
+      // Silently catch network failures, serving original timezone swap or global default
+    }
+  })();
+</script>

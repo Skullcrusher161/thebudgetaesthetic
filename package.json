@@ -13,6 +13,7 @@
     "@astrojs/check": "^0.9.2",
     "@astrojs/react": "^5.0.5",
     "@astrojs/vercel": "^10.0.7",
+    "@portabletext/toolkit": "^5.0.2",
     "@sanity/client": "^6.29.1",
     "@sanity/image-url": "^1.1.0",
     "@sanity/vision": "^4.22.0",

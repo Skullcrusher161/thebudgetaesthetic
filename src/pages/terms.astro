@@ -1,0 +1,101 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+const lastUpdated = "May 26, 2026";
+const siteUrl = "https://thebudgetaesthetic.vercel.app";
+const siteName = "TheBudgetAesthetic";
+---
+
+<BaseLayout
+  title="Terms of Service"
+  description="Terms of Service for TheBudgetAesthetic — visual rules and compliant user guidelines."
+  currentPath="/terms"
+>
+  <div class="max-w-3xl mx-auto px-5 sm:px-8 py-16">
+
+    <!-- Page header -->
+    <div class="mb-12 animate-fade-up">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="w-5 h-px bg-accent"></span>
+        <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">Legal</span>
+      </div>
+      <h1 class="font-display text-4xl font-bold text-white tracking-tight mb-3">Terms of Service</h1>
+      <p class="font-mono text-[11px] text-zinc-500">
+        Last updated: <time datetime="2026-05-26">{lastUpdated}</time>
+      </p>
+    </div>
+
+    <!-- Intro card -->
+    <div class="glass rounded-2xl p-6 mb-10 animate-fade-up animation-delay-100 border border-white/5 shadow-md">
+      <p class="font-mono text-[12px] text-zinc-400 leading-relaxed">
+        Welcome to <strong class="text-white">{siteName}</strong> ({siteUrl}). By accessing or using this website, you agree to comply with and be bound by the following Terms of Service. If you do not agree to these terms, please do not use this site.
+      </p>
+    </div>
+
+    <!-- Policy sections -->
+    <div class="flex flex-col gap-10 animate-fade-up animation-delay-200">
+
+      <!-- 1 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-white mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">01</span>
+          Content and Intellectual Property
+        </h2>
+        <div class="flex flex-col gap-4 pl-8 border-l border-white/10">
+          <p class="font-mono text-[12px] text-zinc-400 leading-relaxed">
+            All content published on {siteName}, including blog posts, product reviews, setups, layout ideas, photographs, illustrations, and code snippets, is the intellectual property of {siteName} unless otherwise credited. No content may be reproduced, distributed, or republished without our prior written consent.
+          </p>
+        </div>
+      </section>
+
+      <!-- 2 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-white mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">02</span>
+          Affiliate & Third-Party Disclosure
+        </h2>
+        <div class="pl-8 border-l border-white/10">
+          <p class="font-mono text-[12px] text-zinc-400 leading-relaxed mb-3">
+            {siteName} is an affiliate marketing site. We do not sell products directly. Any product links you click on this site that direct you to Amazon are affiliate links. As an Amazon Associate, we earn a small commission on qualifying purchases at no additional cost to you.
+          </p>
+          <p class="font-mono text-[12px] text-zinc-400 leading-relaxed">
+            We are not responsible for the availability, customer service, or return policies of any third-party merchants (such as Amazon). Product prices, ratings, and shipping information shown are accurate at the time of publication but are subject to change by the vendor without notice.
+          </p>
+        </div>
+      </section>
+
+      <!-- 3 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-white mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">03</span>
+          Limitation of Liability
+        </h2>
+        <div class="pl-8 border-l border-white/10">
+          <p class="font-mono text-[12px] text-zinc-400 leading-relaxed">
+            All reviews and guides on this site are provided for informational and aesthetic purposes only. While we do our best to thoroughly research and verify each item, we make no representations or warranties of any kind regarding the accuracy, reliability, or safety of any products or technical setup recommendations listed on this site.
+          </p>
+        </div>
+      </section>
+
+      <!-- 4 -->
+      <section>
+        <h2 class="font-display text-xl font-bold text-white mb-4 flex items-center gap-3">
+          <span class="font-mono text-[11px] text-accent font-medium">04</span>
+          Governing Law
+        </h2>
+        <div class="pl-8 border-l border-white/10">
+          <p class="font-mono text-[12px] text-zinc-400 leading-relaxed">
+            These terms and your use of the website shall be governed by and construed in accordance with the laws of India, without regard to conflict of law principles.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer note -->
+    <div class="mt-14 pt-8 border-t border-white/10 animate-fade-up">
+      <p class="font-mono text-[11px] text-zinc-500 leading-relaxed text-center">
+        Thank you for visiting {siteName}. Enjoy building your dream setups on a budget!
+      </p>
+    </div>
+
+  </div>
+</BaseLayout>
