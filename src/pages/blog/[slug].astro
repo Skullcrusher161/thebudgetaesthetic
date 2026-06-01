@@ -4,6 +4,7 @@ import BaseLayout  from "../../layouts/BaseLayout.astro";
 import ProductCard from "../../components/ProductCard.astro";
 import { sanityClient, POST_BY_SLUG_QUERY, heroImageUrl } from "../../lib/sanity.js";
 
+// SSR mode — fetch on each request for always-fresh content
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
@@ -16,6 +17,7 @@ try {
 
 if (!post) return Astro.redirect("/404");
 
+// Derived values
 const heroImg   = post.heroImage ? heroImageUrl(post.heroImage, 1000) : null;
 const heroAlt   = post.heroImage?.alt || post.title;
 const pubDate   = new Date(post.publishedAt).toLocaleDateString("en-IN", {
@@ -25,20 +27,22 @@ const updDate   = post.updatedAt
   ? new Date(post.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
   : null;
 
+// SEO
 const metaTitle = post.seo?.metaTitle       || post.title;
 const metaDesc  = post.seo?.metaDescription || post.excerpt;
 const ogImg = post.seo?.ogImage
   ? heroImageUrl(post.seo.ogImage, 1200)
   : undefined;
 
+// JSON-LD — Article schema
 const articleSchema = {
-  "@context":      "https://schema.org",
-  "@type":         "Article",
-  "headline":      post.title,
-  "description":   post.excerpt,
-  "datePublished": post.publishedAt,
-  "dateModified":  post.updatedAt || post.publishedAt,
-  "image":         heroImg,
+  "@context":       "https://schema.org",
+  "@type":          "Article",
+  "headline":       post.title,
+  "description":    post.excerpt,
+  "datePublished":  post.publishedAt,
+  "dateModified":   post.updatedAt || post.publishedAt,
+  "image":          heroImg,
   "author": {
     "@type": "Person",
     "name":  "TheBudgetAesthetic",
@@ -54,64 +58,25 @@ const articleSchema = {
   },
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Content renderer — handles BOTH:
-//
-// CASE A: string  → raw HTML from the custom admin editor
-//   - strips admin-only remove buttons from product cards
-//   - removes contenteditable attributes
-//   - ensures all images get the blog-img class for full-width styling
-//
-// CASE B: array   → Sanity Portable Text blocks (legacy / fallback)
-// ─────────────────────────────────────────────────────────────────────────────
-function renderContent(content: any): string {
-  if (!content) return ""
-
-  // CASE A — raw HTML string from custom editor
-  if (typeof content === "string") {
-    return content
-      // Remove admin-only ✕ remove buttons inside product cards
-      .replace(/<button[^>]*class="card-remove"[^>]*>[\s\S]*?<\/button>/g, "")
-      // Strip contenteditable (not needed on frontend)
-      .replace(/\s?contenteditable="false"/g, "")
-      // Inline images already have class="inline-img" — add blog-img too
-      .replace(/<img([^>]*?)class="inline-img"([^>]*?)>/g,
-               '<img$1class="inline-img blog-img"$2>')
-      // Any img without a class gets blog-img
-      .replace(/<img(?![^>]*class=)([^>]*?)>/g,
-               '<img class="blog-img"$1>')
+const contentHtml = post.content ? post.content.map((block: any) => {
+  if (block._type === "block") {
+    const tag = block.style === "h2" ? "h2"
+             : block.style === "h3" ? "h3"
+             : block.style === "blockquote" ? "blockquote"
+             : "p";
+    const text = block.children?.map((child: any) => child.text || "").join("") || "";
+    return `<${tag}>${text}</${tag}>`;
   }
 
-  // CASE B — Portable Text array (legacy)
-  if (Array.isArray(content)) {
-    return content.map((block: any) => {
-      if (block._type === "block") {
-        const tag = block.style === "h2"         ? "h2"
-                 : block.style === "h3"          ? "h3"
-                 : block.style === "blockquote"  ? "blockquote"
-                 : "p";
-        const text = block.children?.map((child: any) => child.text || "").join("") || "";
-        return `<${tag}>${text}</${tag}>`;
-      }
-      if (block._type === "image") {
-        const src = heroImageUrl(block, 800);
-        const alt = block.alt || "";
-        const cap = block.caption || "";
-        return (
-          '<figure class="blog-figure">' +
-          '<img src="' + src + '" alt="' + alt + '" class="blog-img" loading="lazy" />' +
-          (cap ? '<figcaption>' + cap + '</figcaption>' : '') +
-          '</figure>'
-        );
-      }
-      return "";
-    }).join("\n")
+  if (block._type === "image") {
+    const src = heroImageUrl(block, 800);
+    const alt = block.alt || "";
+    const cap = block.caption || "";
+    return '<figure><img src="' + src + '" alt="' + alt + '" loading="lazy" />' + (cap ? '<figcaption>' + cap + '</figcaption>' : '') + '</figure>';
   }
 
-  return ""
-}
-
-const contentHtml = renderContent(post.content)
+  return "";
+}).join("\n") : "";
 ---
 
 <BaseLayout
@@ -122,10 +87,12 @@ const contentHtml = renderContent(post.content)
   publishedAt={post.publishedAt}
   noIndex={post.seo?.noIndex}
 >
+  <!-- JSON-LD -->
   <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} slot="head" />
 
-  <!-- ── Hero Section ── -->
+  <!-- ── Hero Section ───────────────────────────────────────────────────────── -->
   <section class="relative">
+    <!-- Pinterest 2:3 Hero Image -->
     <div class="relative w-full overflow-hidden" style="aspect-ratio: 2/3; max-height: 85vh;">
       {heroImg ? (
         <img
@@ -141,11 +108,14 @@ const contentHtml = renderContent(post.content)
           <span class="font-display text-8xl text-mocha/20">{post.title.charAt(0)}</span>
         </div>
       )}
+      <!-- Gradient for legibility -->
       <div class="absolute inset-0 bg-gradient-to-t from-cream via-cream/5 to-transparent"></div>
     </div>
 
+    <!-- Hero Text — overlaid at bottom -->
     <div class="max-w-3xl mx-auto px-4 -mt-20 relative z-10">
       <div class="glass rounded-3xl p-8 animate-fade-up shadow-card">
+        <!-- Categories + Meta -->
         <div class="flex flex-wrap items-center gap-3 mb-5">
           {post.categories?.map((cat: any) => (
             <a
@@ -180,9 +150,8 @@ const contentHtml = renderContent(post.content)
     </div>
   </section>
 
-  <!-- ── Main Content ── -->
+  <!-- ── Main Content ───────────────────────────────────────────────────────── -->
   <div class="max-w-3xl mx-auto px-4 py-12">
-
     <!-- Affiliate Disclosure Banner -->
     <div class="flex items-start gap-3 glass rounded-2xl px-5 py-4 mb-10 text-sm font-body text-charcoal/70">
       <span class="text-gold mt-0.5 text-base">★</span>
@@ -191,16 +160,16 @@ const contentHtml = renderContent(post.content)
       </p>
     </div>
 
-    <!-- Post Body -->
+    <!-- Portable Text Body -->
     {contentHtml ? (
-      <div class="prose prose-aesthetic max-w-none portable-text post-content" set:html={contentHtml} />
+      <div class="prose prose-aesthetic max-w-none portable-text" set:html={contentHtml} />
     ) : (
-      <div class="prose prose-aesthetic max-w-none portable-text post-content">
+      <div class="prose prose-aesthetic max-w-none portable-text">
         <p class="text-charcoal/50 italic">Content coming soon...</p>
       </div>
     )}
 
-    <!-- ── Affiliate Products Section ── -->
+    <!-- ── Affiliate Products Section ──────────────────────────────────────── -->
     {post.affiliateProducts && post.affiliateProducts.length > 0 && (
       <section class="mt-16" aria-labelledby="products-heading">
         <div class="text-center mb-10">
@@ -212,6 +181,7 @@ const contentHtml = renderContent(post.content)
             Prices auto-update for your region (India or Global).
           </p>
         </div>
+
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {post.affiliateProducts.map((product: any, i: number) => (
             <ProductCard
@@ -231,7 +201,7 @@ const contentHtml = renderContent(post.content)
       </section>
     )}
 
-    <!-- ── Share Section ── -->
+    <!-- ── Share Section ──────────────────────────────────────────────────── -->
     <section class="mt-16 glass rounded-3xl p-8 text-center">
       <p class="font-display text-2xl font-semibold text-mocha mb-2">Save this for later ✦</p>
       <p class="text-charcoal/60 font-body text-sm mb-6">Pin this post on Pinterest so you never lose it.</p>
@@ -255,190 +225,5 @@ const contentHtml = renderContent(post.content)
         </button>
       </div>
     </section>
-
   </div>
 </BaseLayout>
-
-<style>
-  /* ─────────────────────────────────────────────────────────────
-     INLINE IMAGES — full width of the content column
-  ───────────────────────────────────────────────────────────────── */
-  :global(.post-content img),
-  :global(.post-content .blog-img) {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
-    border-radius: 12px;
-    margin: 1.5rem 0;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-  }
-
-  :global(.post-content figure.blog-figure) {
-    margin: 1.5rem 0;
-    width: 100%;
-  }
-
-  :global(.post-content figure.blog-figure figcaption) {
-    text-align: center;
-    font-size: 0.8rem;
-    color: #888;
-    margin-top: 0.5rem;
-    font-style: italic;
-  }
-
-  /* ─────────────────────────────────────────────────────────────
-     INLINE PRODUCT CARDS — polished public-facing style
-  ───────────────────────────────────────────────────────────────── */
-  :global(.post-content .inline-product-card) {
-    display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: 1.25rem;
-    background: #faf9f6;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 16px;
-    padding: 1.25rem;
-    margin: 1.75rem 0;
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
-    position: relative;
-  }
-
-  /* Hide admin remove button on public site */
-  :global(.post-content .inline-product-card .card-remove) {
-    display: none !important;
-  }
-
-  :global(.post-content .inline-product-card .card-img) {
-    width: 140px;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 10px;
-    /* override the blog-img rule above for product images */
-    margin: 0;
-    box-shadow: none;
-  }
-
-  :global(.post-content .inline-product-card .card-img-placeholder) {
-    width: 140px;
-    height: 140px;
-    background: #f0ece4;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-  }
-
-  :global(.post-content .inline-product-card .card-info) {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    justify-content: center;
-  }
-
-  :global(.post-content .inline-product-card .card-badge) {
-    display: inline-block;
-    background: #c9922a;
-    color: white;
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 0.2rem 0.6rem;
-    border-radius: 4px;
-    width: fit-content;
-  }
-
-  :global(.post-content .inline-product-card .card-name) {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #2c2c2c;
-    line-height: 1.3;
-  }
-
-  :global(.post-content .inline-product-card .card-rating) {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.8rem;
-    color: #888;
-  }
-
-  :global(.post-content .inline-product-card .stars) {
-    color: #f59e0b;
-  }
-
-  :global(.post-content .inline-product-card .card-prices) {
-    display: flex;
-    gap: 0.75rem;
-    align-items: baseline;
-  }
-
-  :global(.post-content .inline-product-card .card-price-inr) {
-    font-weight: 700;
-    font-size: 1rem;
-    color: #2c2c2c;
-  }
-
-  :global(.post-content .inline-product-card .card-price-usd) {
-    font-size: 0.85rem;
-    color: #888;
-  }
-
-  :global(.post-content .inline-product-card .card-btns) {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: 0.25rem;
-  }
-
-  :global(.post-content .inline-product-card .card-btn-india) {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.45rem 1rem;
-    background: #ff9900;
-    color: white;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: opacity 0.15s;
-  }
-  :global(.post-content .inline-product-card .card-btn-india:hover) { opacity: 0.85; }
-
-  :global(.post-content .inline-product-card .card-btn-global) {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.45rem 1rem;
-    background: white;
-    color: #2c2c2c;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background 0.15s;
-  }
-  :global(.post-content .inline-product-card .card-btn-global:hover) { background: #f5f5f5; }
-
-  :global(.post-content .inline-product-card .card-disclosure) {
-    font-size: 0.65rem;
-    color: #aaa;
-    margin-top: 0.25rem;
-  }
-
-  /* Mobile: stack product card vertically */
-  @media (max-width: 480px) {
-    :global(.post-content .inline-product-card) {
-      grid-template-columns: 1fr;
-    }
-    :global(.post-content .inline-product-card .card-img),
-    :global(.post-content .inline-product-card .card-img-placeholder) {
-      width: 100%;
-      height: 200px;
-    }
-  }
-</style>
