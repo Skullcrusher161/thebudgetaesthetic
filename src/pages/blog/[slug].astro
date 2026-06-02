@@ -18,8 +18,10 @@ try {
 if (!post) return Astro.redirect("/404");
 
 // Derived values
-const heroImg   = post.heroImage ? heroImageUrl(post.heroImage, 1000) : null;
-const heroAlt   = post.heroImage?.alt || post.title;
+const heroImg = post.heroImage
+  ? (post.heroImage.asset?.url || heroImageUrl(post.heroImage, 1000))
+  : null;
+const heroAlt = post.heroImage?.alt || post.title;
 const pubDate   = new Date(post.publishedAt).toLocaleDateString("en-IN", {
   day: "numeric", month: "long", year: "numeric",
 });
@@ -58,25 +60,32 @@ const articleSchema = {
   },
 };
 
-const contentHtml = post.content ? post.content.map((block: any) => {
-  if (block._type === "block") {
-    const tag = block.style === "h2" ? "h2"
-             : block.style === "h3" ? "h3"
-             : block.style === "blockquote" ? "blockquote"
-             : "p";
-    const text = block.children?.map((child: any) => child.text || "").join("") || "";
-    return `<${tag}>${text}</${tag}>`;
-  }
+const contentHtml = post.content
+  ? (typeof post.content === 'string'
+      ? post.content
+      : Array.isArray(post.content)
+        ? post.content.map((block: any) => {
+            if (block._type === "block") {
+              const tag = block.style === "h2" ? "h2"
+                       : block.style === "h3" ? "h3"
+                       : block.style === "blockquote" ? "blockquote"
+                       : "p";
+              const text = block.children?.map((child: any) => child.text || "").join("") || "";
+              return `<${tag}>${text}</${tag}>`;
+            }
 
-  if (block._type === "image") {
-    const src = heroImageUrl(block, 800);
-    const alt = block.alt || "";
-    const cap = block.caption || "";
-    return '<figure><img src="' + src + '" alt="' + alt + '" loading="lazy" />' + (cap ? '<figcaption>' + cap + '</figcaption>' : '') + '</figure>';
-  }
+            if (block._type === "image") {
+              const src = heroImageUrl(block, 800);
+              const alt = block.alt || "";
+              const cap = block.caption || "";
+              return '<figure><img src="' + src + '" alt="' + alt + '" loading="lazy" />' + (cap ? '<figcaption>' + cap + '</figcaption>' : '') + '</figure>';
+            }
 
-  return "";
-}).join("\n") : "";
+            return "";
+          }).join("\n")
+        : String(post.content)
+    )
+  : "";
 ---
 
 <BaseLayout

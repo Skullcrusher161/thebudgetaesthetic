@@ -74,7 +74,7 @@ const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
 
   <!-- Footer -->
   <footer class="mt-24 border-t border-ink/8">
-    <div class="max-w-6xl mx-auto px-5 sm:px-8 py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 py-14 grid grid-cols-1 md:grid-cols-5 gap-10">
 
       <!-- Brand column -->
       <div class="md:col-span-2 flex flex-col gap-4">
@@ -122,8 +122,8 @@ const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
         <p class="font-mono text-[10px] uppercase tracking-widest text-dim mb-4">Info</p>
         <ul class="flex flex-col gap-2.5">
           {[
-            ["Privacy Policy",       "/privacy"   ],
             ["Affiliate Disclosure", "/disclosure"],
+            ["Terms & Conditions",   "/terms"     ],
           ].map(([label, href]) => (
             <li>
               <a href={href} class="font-mono text-[12px] text-steel/70 hover:text-ink transition-colors flex items-center gap-1.5">
@@ -131,6 +131,18 @@ const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
               </a>
             </li>
           ))}
+        </ul>
+      </div>
+
+      <!-- Socials -->
+      <div>
+        <p class="font-mono text-[10px] uppercase tracking-widest text-dim mb-4">Socials</p>
+        <ul class="flex flex-col gap-2.5">
+          <li>
+            <a href="https://pin.it/4SBKGg6RD" target="_blank" rel="noopener noreferrer" class="font-mono text-[12px] text-steel/70 hover:text-ink transition-colors flex items-center gap-1.5">
+              <span class="text-accent text-[10px]">→</span>Pinterest
+            </a>
+          </li>
         </ul>
       </div>
     </div>

@@ -1,9 +1,9 @@
 // src/pages/api/admin/upload-image.ts
-// ─── THIS FILE WAS MISSING — it's why inline image upload was broken ───
 export const prerender = false
 
 import type { APIRoute } from 'astro'
 import { createClient } from '@sanity/client'
+import { Readable } from 'node:stream'
 
 const sanity = createClient({
   projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID,
@@ -39,8 +39,9 @@ export const POST: APIRoute = async ({ request }) => {
       })
     }
 
-    const buffer = await file.arrayBuffer()
-    const asset = await sanity.assets.upload('image', Buffer.from(buffer), {
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const stream = Readable.from(buffer)
+    const asset = await sanity.assets.upload('image', stream, {
       filename: file.name,
       contentType: file.type,
     })

@@ -242,9 +242,10 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
 </AdminLayout>
 
 <style>
-  .post-form { width: 100%; }
-  .form-grid { display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; align-items: start; }
-  .form-main { min-width: 0; overflow: hidden; }
+  .post-form { width: 100%; max-width: 100%; box-sizing: border-box; }
+  .form-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 1.5rem; align-items: start; max-width: 100%; overflow: hidden; }
+  .form-main { min-width: 0; overflow: hidden; max-width: 100%; }
+  .form-sidebar { min-width: 0; overflow: hidden; max-width: 280px; }
 
   .page-header { margin-bottom: 1.5rem; }
   .page-header h1 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0 0 0.25rem 0; }
@@ -271,7 +272,7 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
   .slug-row input { border: none !important; box-shadow: none !important; background: transparent !important; border-radius: 0 !important; flex: 1; }
 
   /* Editor */
-  .editor-toolbar { display: flex; flex-wrap: wrap; gap: 0.25rem; padding: 0.5rem; background: var(--cream); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; }
+  .editor-toolbar { display: flex; flex-wrap: wrap; gap: 0.25rem; padding: 0.5rem; background: var(--cream); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; max-width: 100%; box-sizing: border-box; }
   .editor-toolbar button { padding: 0.3rem 0.6rem; background: none; border: 1px solid transparent; border-radius: 5px; font-size: 0.8rem; cursor: pointer; color: var(--text-muted); font-family: inherit; transition: background 0.1s; }
   .editor-toolbar button:hover { background: var(--cream-card); color: var(--text); border-color: var(--border); }
 
@@ -286,7 +287,7 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
   .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 1s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
 
-  .editor-body { min-height: 320px; padding: 1rem; background: var(--cream-card); border: 1px solid var(--border); border-radius: 0 0 8px 8px; font-size: 0.93rem; line-height: 1.7; outline: none; color: var(--text); }
+  .editor-body { min-height: 320px; padding: 1rem; background: var(--cream-card); border: 1px solid var(--border); border-radius: 0 0 8px 8px; font-size: 0.93rem; line-height: 1.7; outline: none; color: var(--text); overflow: hidden; width: 100%; max-width: 100%; box-sizing: border-box; }
   .editor-body:focus { border-color: var(--gold); }
   .editor-body h2 { font-size: 1.3rem; font-weight: 700; margin: 1rem 0 0.5rem; }
   .editor-body h3 { font-size: 1.1rem; font-weight: 600; margin: 0.75rem 0 0.4rem; }
@@ -296,15 +297,16 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
   .editor-body a { color: var(--gold); }
 
   /* Inline images */
-  .editor-body img.inline-img { max-width: 100%; border-radius: 6px; display: block; margin: 0.75rem 0; cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s; }
+  .editor-body img.inline-img { max-width: 250px; width: 100%; border-radius: 6px; display: block; margin: 0.75rem 0; cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s; }
   .editor-body img.inline-img:hover { border-color: var(--gold); }
 
   /* ── Inline product card ── */
   .editor-body .inline-product-card {
-    display: grid; grid-template-columns: 120px 1fr; gap: 1rem;
+    display: flex; flex-direction: row; gap: 1rem; align-items: flex-start;
     background: var(--cream); border: 1px solid var(--border); border-radius: 12px;
     padding: 1rem; margin: 1rem 0; position: relative;
-    user-select: none; cursor: default;
+    user-select: none; cursor: default; overflow: hidden;
+    width: 100%; max-width: 100%; box-sizing: border-box;
   }
   .editor-body .inline-product-card:hover { border-color: var(--gold); }
   .editor-body .inline-product-card .card-remove {
@@ -312,12 +314,12 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
     background: #b91c1c; color: white; border: none; border-radius: 50%;
     width: 22px; height: 22px; font-size: 0.65rem; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.15s;
+    opacity: 0; transition: opacity 0.15s; flex-shrink: 0;
   }
   .editor-body .inline-product-card:hover .card-remove { opacity: 1; }
-  .editor-body .inline-product-card .card-img { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; display: block; }
-  .editor-body .inline-product-card .card-img-placeholder { width: 120px; height: 120px; background: var(--cream-card); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--text-muted); }
-  .editor-body .inline-product-card .card-info { display: flex; flex-direction: column; gap: 0.35rem; }
+  .editor-body .inline-product-card .card-img { width: 120px; height: 120px; min-width: 120px; object-fit: cover; border-radius: 8px; display: block; flex-shrink: 0; }
+  .editor-body .inline-product-card .card-img-placeholder { width: 120px; height: 120px; min-width: 120px; background: var(--cream-card); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--text-muted); flex-shrink: 0; }
+  .editor-body .inline-product-card .card-info { display: flex; flex-direction: column; gap: 0.35rem; flex: 1; min-width: 0; }
   .editor-body .inline-product-card .card-badge { display: inline-block; background: var(--gold); color: white; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.2rem 0.5rem; border-radius: 4px; width: fit-content; }
   .editor-body .inline-product-card .card-name { font-size: 0.92rem; font-weight: 600; color: var(--text); line-height: 1.3; }
   .editor-body .inline-product-card .card-rating { display: flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; color: var(--text-muted); }
@@ -331,7 +333,7 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
   .editor-body .inline-product-card .card-disclosure { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.2rem; }
 
   /* Sidebar */
-  .sidebar-card { background: var(--cream-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+  .sidebar-card { background: var(--cream-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; overflow: hidden; max-width: 100%; box-sizing: border-box; }
   .sidebar-card h3 { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 1rem; }
   .checkbox-label { display: flex !important; flex-direction: row !important; align-items: center; gap: 0.5rem; text-transform: none !important; letter-spacing: 0 !important; font-size: 0.875rem !important; color: var(--text) !important; cursor: pointer; }
   .checkbox-label input { width: auto; }
@@ -343,8 +345,8 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
   .btn-secondary { padding: 0.7rem 1rem; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; font-size: 0.875rem; font-weight: 500; text-align: center; text-decoration: none; color: var(--text); display: block; transition: background 0.12s; cursor: pointer; }
   .btn-secondary:hover { background: var(--cream-hover); }
 
-  #image-preview { cursor: pointer; }
-  .cover-preview { width: 100%; border-radius: 6px; display: block; }
+  #image-preview { cursor: pointer; overflow: hidden; max-width: 100%; }
+  .cover-preview { width: 100%; max-width: 100%; border-radius: 6px; display: block; box-sizing: border-box; }
   .image-preview-empty { border: 2px dashed var(--border); border-radius: 8px; padding: 1.5rem; text-align: center; font-size: 0.82rem; color: var(--text-muted); }
   .image-preview-empty:hover { border-color: var(--gold); }
   .upload-icon { font-size: 1.5rem; display: block; margin-bottom: 0.4rem; }
@@ -402,6 +404,8 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
 
   function syncContent() { contentInput.value = editor.innerHTML }
   editor?.addEventListener('input', syncContent)
+  editor?.addEventListener('blur', syncContent)
+  syncContent()
 
   function showToast(msg: string, type: 'success' | 'error') {
     const toast = document.getElementById('toast') as HTMLElement
@@ -412,28 +416,22 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
   }
 
   // ════════════════════════════════════════════
-  // RE-HYDRATE SAVED PRODUCT CARDS
-  // When the editor loads with saved HTML, any previously saved product cards
-  // will be plain HTML divs without their remove-button event listeners.
-  // We find them and re-attach the listeners so they're removable again.
+  // REMOVE PRODUCT CARDS — event delegation on editor
+  // Direct listeners on contenteditable=false children are unreliable;
+  // delegating to the editor guarantees the click is caught.
   // ════════════════════════════════════════════
+  editor.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('.card-remove')
+    if (!btn) return
+    const card = btn.closest('.inline-product-card')
+    if (card) { card.remove(); syncContent() }
+  })
+
   function rehydrateSavedCards() {
     editor.querySelectorAll('.inline-product-card').forEach((card) => {
-      // Re-attach remove button listener if it exists
-      const removeBtn = card.querySelector('.card-remove') as HTMLButtonElement | null
-      if (removeBtn && !removeBtn.dataset.hydrated) {
-        removeBtn.dataset.hydrated = '1'
-        removeBtn.addEventListener('click', () => {
-          card.remove()
-          syncContent()
-        })
-      }
-      // Make sure card is non-editable
       ;(card as HTMLElement).contentEditable = 'false'
     })
   }
-
-  // Run on page load after editor content is set
   rehydrateSavedCards()
 
   // ════════════════════════════════════════════
@@ -688,6 +686,7 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
     removeBtn.title = 'Remove product card'
     removeBtn.innerHTML = '✕'
     removeBtn.addEventListener('click', () => { card.remove(); syncContent() })
+    card.appendChild(removeBtn)
 
     const imgEl = data.imageUrl
       ? (() => { const i = document.createElement('img'); i.src = data.imageUrl; i.alt = data.name; i.className = 'card-img'; return i })()
@@ -721,7 +720,7 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
 
     const disc = document.createElement('p'); disc.className = 'card-disclosure'; disc.textContent = '* Affiliate links — we may earn a commission at no extra cost to you.'; info.appendChild(disc)
 
-    card.appendChild(removeBtn); card.appendChild(imgEl); card.appendChild(info)
+    card.appendChild(imgEl); card.appendChild(info)
     return card
   }
 
@@ -751,6 +750,7 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
     submitBtn.disabled = true
     submitBtn.textContent = 'Saving...'
     const formData = new FormData(form)
+    formData.set('content', editor?.innerHTML || '')
     try {
       const res = await fetch('/api/admin/posts/update', { method: 'POST', body: formData })
       const result = await res.json()

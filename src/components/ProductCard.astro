@@ -1,5 +1,5 @@
 ---
-import { buildAffiliateUrls, AFFILIATE_SWAP_SCRIPT } from "../lib/affiliateUrl.js";
+import { buildAffiliateUrls } from "../lib/affiliateUrl.js";
 import { productImageUrl } from "../lib/sanity.js";
 
 interface Props {
@@ -7,25 +7,27 @@ interface Props {
   productImage: any;
   indiaLink:    string;
   globalLink:   string;
-  price:        number;
-  currency:     "INR" | "USD" | "GBP";
-  rating:       number;
+  price?:       number;
+  currency?:     "INR" | "USD" | "GBP";
+  rating?:       number | null;
   ratingCount?: number;
   badge?:       string;
   index?:       number;
 }
 
-const { name, productImage, indiaLink, globalLink, price, currency = "INR", rating, ratingCount, badge, index = 0 } = Astro.props;
+const { name, productImage, indiaLink, globalLink, price, currency = "INR", rating = null, ratingCount, badge, index = 0 } = Astro.props;
 
 const urls   = buildAffiliateUrls(indiaLink, globalLink);
 const imgUrl = productImage ? productImageUrl(productImage, 480) : null;
 const alt    = productImage?.alt || name;
 
-const fmt = (p, c) => c === "INR" ? `₹${p.toLocaleString("en-IN")}` : c === "USD" ? `$${p.toLocaleString()}` : `£${p.toLocaleString()}`;
+const fmtInr = (p: number) => `₹${p.toLocaleString("en-IN")}`;
+const fmtUsd = (p: number) => `$${p.toLocaleString()}`;
 
-const full  = Math.floor(rating);
-const half  = rating % 1 >= 0.5;
-const empty = 5 - full - (half ? 1 : 0);
+const ratingValue = typeof rating === "number" && !Number.isNaN(rating) ? rating : null;
+const full  = ratingValue !== null ? Math.floor(ratingValue) : 0;
+const half  = ratingValue !== null ? ratingValue % 1 >= 0.5 : false;
+const empty = ratingValue !== null ? 5 - full - (half ? 1 : 0) : 5;
 const delay = `${index * 80}ms`;
 ---
 
@@ -52,22 +54,23 @@ const delay = `${index * 80}ms`;
       </span>
     )}
 
-    <!-- Rating overlay -->
-    <div class="absolute bottom-3 left-3 right-3">
-      <div class="glass rounded-full px-3 py-1.5 flex items-center gap-1.5 w-fit">
-        <span class="flex gap-0.5" aria-label={`${rating} out of 5`}>
-          {Array.from({ length: full }).map(() => (
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="#E8A842"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>
-          ))}
-          {half && <svg width="10" height="10" viewBox="0 0 12 12" fill="#E8A842" opacity="0.5"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>}
-          {Array.from({ length: empty }).map(() => (
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="#D4D9EC"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>
-          ))}
-        </span>
-        <span class="text-xs font-medium text-ink/80">{rating.toFixed(1)}</span>
-        {ratingCount && <span class="text-[10px] text-slate/50">({ratingCount.toLocaleString()})</span>}
+    {ratingValue !== null && (
+      <div class="absolute bottom-3 left-3 right-3">
+        <div class="glass rounded-full px-3 py-1.5 flex items-center gap-1.5 w-fit">
+          <span class="flex gap-0.5" aria-label={`${ratingValue} out of 5`}>
+            {Array.from({ length: full }).map(() => (
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="#E8A842"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>
+            ))}
+            {half && <svg width="10" height="10" viewBox="0 0 12 12" fill="#E8A842" opacity="0.5"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>}
+            {Array.from({ length: empty }).map(() => (
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="#D4D9EC"><path d="M6 1l1.3 2.7L10 4.1l-2 2 .5 2.9L6 7.5 3.5 9l.5-2.9-2-2 2.7-.4z"/></svg>
+            ))}
+          </span>
+          <span class="text-xs font-medium text-ink/80">{ratingValue.toFixed(1)}</span>
+          {ratingCount && <span class="text-[10px] text-slate/50">({ratingCount.toLocaleString()})</span>}
+        </div>
       </div>
-    </div>
+    )}
   </div>
 
   <!-- Body -->
@@ -75,26 +78,43 @@ const delay = `${index * 80}ms`;
     <h3 class="font-display font-bold text-sm text-ink leading-snug line-clamp-2" itemprop="name">{name}</h3>
 
     <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-      <span class="text-xl font-display font-bold text-ink" itemprop="price" content={price.toString()}>
-        {fmt(price, currency)}
-      </span>
-      <meta itemprop="priceCurrency" content={currency}/>
+      {typeof price === "number" ? (
+        <>
+          <span class="text-xl font-display font-bold text-ink" itemprop="price" content={price.toString()}>
+            {currency === "INR" ? fmtInr(price) : fmtUsd(price)}
+          </span>
+          <meta itemprop="priceCurrency" content={currency}/>
+        </>
+      ) : (
+        <span class="text-xl font-display font-bold text-ink">Price unavailable</span>
+      )}
       <span class="text-xs text-slate/40 ml-1 font-body">on Amazon</span>
     </div>
 
-    <a
-      href={urls.global}
-      data-affiliate
-      data-url-in={urls.in}
-      data-url-global={urls.global}
-      target="_blank"
-      rel="noopener noreferrer sponsored"
-      class="btn-electric w-full justify-center mt-auto text-xs"
-      aria-label={`Check price of ${name} on Amazon`}
-    >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      Check Price on Amazon
-    </a>
+    <!-- Two affiliate buttons: India + Global -->
+    <div class="flex flex-col gap-2 mt-auto">
+      <a
+        href={urls.in}
+        target="_blank"
+        rel="noopener noreferrer sponsored"
+        class="btn-amazon-india"
+        aria-label={`Buy ${name} on Amazon India`}
+      >
+        <span>🇮🇳</span>
+        Buy on Amazon.in
+      </a>
+
+      <a
+        href={urls.global}
+        target="_blank"
+        rel="noopener noreferrer sponsored"
+        class="btn-amazon-global"
+        aria-label={`Buy ${name} on Amazon Global`}
+      >
+        <span>🌍</span>
+        Amazon Global
+      </a>
+    </div>
 
     <p class="text-[10px] text-slate/35 text-center leading-relaxed">
       Affiliate link · Price may vary · Earns a small commission.
@@ -102,4 +122,3 @@ const delay = `${index * 80}ms`;
   </div>
 </article>
 
-<script set:html={AFFILIATE_SWAP_SCRIPT}/>

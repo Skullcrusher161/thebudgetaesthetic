@@ -1,10 +1,9 @@
 // src/pages/api/admin/posts/save.ts
-// Creates a new post in Sanity, uploads cover image if provided,
-// and extracts inline product cards from editor HTML content.
 export const prerender = false
 
 import type { APIRoute } from 'astro'
 import { createClient } from '@sanity/client'
+import { Buffer } from 'node:buffer'
 
 const sanity = createClient({
   projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID,
@@ -30,20 +29,12 @@ function extractProductCards(html: string): Array<{
   assetId?: string
 }> {
   const cards: any[] = []
-  // Match data-product-card="..." (both quote styles)
-  const re = /data-product-card='([^']+)'/g
+  // innerHTML serialises data attributes with double quotes and &quot; inside
+  const re = /data-product-card="([^"]*)"/g
   let m
   while ((m = re.exec(html)) !== null) {
     try {
-      cards.push(JSON.parse(m[1]))
-    } catch { /* skip malformed */ }
-  }
-  // Also try double-quote variant
-  const re2 = /data-product-card="([^"]+)"/g
-  while ((m = re2.exec(html)) !== null) {
-    try {
-      // JSON inside an HTML attribute will have &quot; escaped
-      cards.push(JSON.parse(m[1].replace(/&quot;/g, '"')))
+      cards.push(JSON.parse(m[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'")))
     } catch { /* skip malformed */ }
   }
   return cards

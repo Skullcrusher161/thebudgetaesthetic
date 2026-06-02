@@ -14,7 +14,7 @@ const sanity = createClient({
 })
 
 const posts = await sanity.fetch(`*[_type == "post"] | order(_createdAt desc){
-  _id, title, slug, published, _createdAt, _updatedAt, category->{title}
+  _id, title, slug, published, _createdAt, _updatedAt, categories[]->{title}
 }`)
 ---
 
@@ -53,8 +53,8 @@ const posts = await sanity.fetch(`*[_type == "post"] | order(_createdAt desc){
       <div class="table-row" data-title={post.title?.toLowerCase()}>
         <span class="post-title">{post.title}</span>
         <span>
-          {post.category?.title && (
-            <span class="tag">{post.category.title}</span>
+          {post.categories && post.categories.length > 0 && (
+            <span class="tag">{post.categories[0].title}</span>
           )}
         </span>
         <span>

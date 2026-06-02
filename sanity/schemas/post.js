@@ -1,84 +1,120 @@
-// src/pages/api/admin/posts/save.ts
-// Creates a new post in Sanity, uploads cover image if provided
-export const prerender = false
-
-import type { APIRoute } from 'astro'
-import { createClient } from '@sanity/client'
-
-const sanity = createClient({
-  projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID,
-  dataset: import.meta.env.PUBLIC_SANITY_DATASET || 'production',
-  apiVersion: '2024-01-01',
-  token: import.meta.env.SANITY_WRITE_TOKEN,
-  useCdn: false,
-})
-
-export const POST: APIRoute = async ({ request }) => {
-  try {
-    const formData = await request.formData()
-
-    const title = formData.get('title')?.toString()
-    const slug = formData.get('slug')?.toString()
-    const content = formData.get('content')?.toString() || ''
-    const excerpt = formData.get('excerpt')?.toString() || ''
-    const categoryId = formData.get('categoryId')?.toString()
-    const published = formData.get('published') === 'on'
-    const coverImageFile = formData.get('coverImage') as File | null
-
-    if (!title || !slug) {
-      return new Response(JSON.stringify({ error: 'Title and slug are required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
-
-    // Upload cover image to Sanity if provided
-    let coverImageAsset = null
-    if (coverImageFile && coverImageFile.size > 0) {
-      const buffer = await coverImageFile.arrayBuffer()
-      const asset = await sanity.assets.upload('image', Buffer.from(buffer), {
-        filename: coverImageFile.name,
-        contentType: coverImageFile.type,
-      })
-      coverImageAsset = {
-        _type: 'image',
-        asset: { _type: 'reference', _ref: asset._id },
-        alt: title,
-      }
-    }
-
-    // Build post document
-    const postDoc: any = {
-      _type: 'post',
-      title,
-      slug: { _type: 'slug', current: slug },
-      content,
-      excerpt,
-      published,
-      publishedAt: new Date().toISOString(),
-    }
-
-    if (categoryId) {
-      postDoc.categories = [
-        { _type: 'reference', _ref: categoryId, _key: categoryId },
-      ]
-    }
-
-    if (coverImageAsset) {
-      postDoc.heroImage = coverImageAsset
-    }
-
-    const created = await sanity.create(postDoc)
-
-    return new Response(JSON.stringify({ ok: true, id: created._id }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  } catch (err: any) {
-    console.error('Save post error:', err)
-    return new Response(JSON.stringify({ error: err.message || 'Failed to save' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
+// sanity/schemas/post.js
+export default {
+  name: 'post',
+  title: 'Post',
+  type: 'document',
+  fields: [
+    {
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      validation: (Rule) => Rule.required().min(10).max(100),
+    },
+    {
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: { source: 'title', maxLength: 96 },
+      validation: (Rule) => Rule.required(),
+    },
+    {
+      name: 'publishedAt',
+      title: 'Published At',
+      type: 'datetime',
+      validation: (Rule) => Rule.required(),
+    },
+    {
+      name: 'updatedAt',
+      title: 'Updated At',
+      type: 'datetime',
+    },
+    {
+      name: 'excerpt',
+      title: 'Excerpt',
+      type: 'text',
+      rows: 3,
+      validation: (Rule) => Rule.max(200),
+    },
+    {
+      name: 'heroImage',
+      title: 'Hero Image',
+      type: 'image',
+      options: { hotspot: true },
+      fields: [
+        { name: 'alt', title: 'Alt Text', type: 'string' },
+        { name: 'caption', title: 'Caption', type: 'string' },
+      ],
+    },
+    {
+      name: 'categories',
+      title: 'Categories',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'category' }] }],
+    },
+    {
+      name: 'content',
+      title: 'Content',
+      type: 'string',
+    },
+    {
+      name: 'published',
+      title: 'Published',
+      type: 'boolean',
+      initialValue: false,
+    },
+    {
+      name: 'affiliateProducts',
+      title: 'Affiliate Products',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            { name: 'name', title: 'Product Name', type: 'string' },
+            {
+              name: 'productImage',
+              title: 'Product Image',
+              type: 'image',
+              options: { hotspot: true },
+              fields: [{ name: 'alt', title: 'Alt Text', type: 'string' }],
+            },
+            { name: 'indiaLink', title: 'India Link (Amazon.in)', type: 'url' },
+            { name: 'globalLink', title: 'Global Link (Amazon.com)', type: 'url' },
+            { name: 'price', title: 'Price', type: 'number' },
+            {
+              name: 'currency',
+              title: 'Currency',
+              type: 'string',
+              options: { list: ['INR', 'USD', 'GBP'] },
+            },
+            {
+              name: 'rating',
+              title: 'Rating (0–5)',
+              type: 'number',
+              validation: (Rule) => Rule.min(0).max(5),
+            },
+            { name: 'ratingCount', title: 'Rating Count', type: 'number' },
+            { name: 'badge', title: 'Badge', type: 'string' },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'seo',
+      title: 'SEO',
+      type: 'object',
+      fields: [
+        { name: 'metaTitle', title: 'Meta Title', type: 'string', validation: (Rule) => Rule.max(60) },
+        { name: 'metaDescription', title: 'Meta Description', type: 'text', validation: (Rule) => Rule.max(160) },
+        { name: 'ogImage', title: 'OG Image', type: 'image' },
+        { name: 'noIndex', title: 'No Index', type: 'boolean', initialValue: false },
+      ],
+    },
+  ],
+  preview: {
+    select: { title: 'title', media: 'heroImage' },
+    prepare({ title, media }) {
+      return { title, media }
+    },
+  },
 }

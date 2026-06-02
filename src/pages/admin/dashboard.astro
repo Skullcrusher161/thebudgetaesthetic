@@ -19,7 +19,7 @@ const [posts, totalViews, totalClicks, recentPosts] = await Promise.all([
   sanity.fetch(`count(*[_type == "postView"])`),
   sanity.fetch(`count(*[_type == "analyticsClick"])`),
   sanity.fetch(`*[_type == "post"] | order(_createdAt desc)[0..4]{
-    _id, title, slug, published, _createdAt, category->{title}
+    _id, title, slug, published, _createdAt, categories[]->{title}
   }`),
 ])
 ---
@@ -74,7 +74,7 @@ const [posts, totalViews, totalClicks, recentPosts] = await Promise.all([
       {recentPosts.map((post: any) => (
         <div class="table-row">
           <span class="post-title">{post.title}</span>
-          <span class="tag">{post.category?.title || '—'}</span>
+          <span class="tag">{post.categories?.[0]?.title || '—'}</span>
           <span>
             <span class={`status ${post.published ? 'published' : 'draft'}`}>
               {post.published ? 'Published' : 'Draft'}

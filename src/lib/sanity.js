@@ -70,19 +70,20 @@ export const ALL_POSTS_QUERY = groq`
   | order(publishedAt desc) {
     _id, title, slug, publishedAt, excerpt, heroImage,
     categories[]->{title, slug},
-    "readTime": round(length(pt::text(content)) / 200)
+    "readTime": round(length(coalesce(pt::text(content), content, "")) / 200)
   }
 `;
  
 export const POST_BY_SLUG_QUERY = groq`
   *[_type == "post" && slug.current == $slug && !(_id in path("drafts.**"))][0] {
-    _id, title, slug, publishedAt, updatedAt, excerpt, heroImage,
+    _id, title, slug, publishedAt, updatedAt, excerpt,
+    heroImage{alt, asset->{_id, url}},
     content, seo, categories[]->{title, slug},
     affiliateProducts[] {
       _key, name, productImage, indiaLink, globalLink,
       price, currency, rating, ratingCount, badge
     },
-    "readTime": round(length(pt::text(content)) / 200)
+    "readTime": round(length(coalesce(pt::text(content), content, "")) / 200)
   }
 `;
  
@@ -94,6 +95,7 @@ export const POSTS_BY_CATEGORY_QUERY = groq`
   *[_type == "post" && $category in categories[]->slug.current && !(_id in path("drafts.**"))]
   | order(publishedAt desc) {
     _id, title, slug, publishedAt, excerpt, heroImage,
+    categories[]->{title, slug},
     "readTime": round(length(pt::text(content)) / 200)
   }
 `;
