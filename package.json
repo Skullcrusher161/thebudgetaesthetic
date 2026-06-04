@@ -24,7 +24,7 @@
     "react": "^19.2.6",
     "react-compiler-runtime": "^1.0.0",
     "react-dom": "^19.2.6",
-    "sanity": "^2.36.6",
+    "sanity": "^3.89.0",
     "styled-components": "^6.1.0",
     "typescript": "^5.9.3"
   },
