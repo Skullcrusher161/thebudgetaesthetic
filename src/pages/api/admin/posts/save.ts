@@ -50,6 +50,7 @@ export const POST: APIRoute = async ({ request }) => {
     const excerpt = formData.get('excerpt')?.toString() || ''
     const categoryId = formData.get('categoryId')?.toString()
     const published = formData.get('published') === 'on'
+    const publishedAtInput = formData.get('publishedAt')?.toString()
     const coverImageFile = formData.get('coverImage') as File | null
 
     if (!title || !slug) {
@@ -103,6 +104,11 @@ export const POST: APIRoute = async ({ request }) => {
     })
 
     // ── Build post document ──
+    let finalPublishedAt = new Date().toISOString()
+    if (publishedAtInput) {
+      finalPublishedAt = new Date(publishedAtInput).toISOString()
+    }
+
     const postDoc: any = {
       _type: 'post',
       title,
@@ -110,7 +116,7 @@ export const POST: APIRoute = async ({ request }) => {
       content,           // raw HTML; used for display
       excerpt,
       published,
-      publishedAt: new Date().toISOString(),
+      publishedAt: finalPublishedAt,
     }
 
     if (affiliateProducts.length > 0) {

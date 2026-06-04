@@ -66,7 +66,7 @@ function groq(strings, ...values) {
 }
  
 export const ALL_POSTS_QUERY = groq`
-  *[_type == "post" && !(_id in path("drafts.**"))]
+  *[_type == "post" && published == true && publishedAt <= now() && !(_id in path("drafts.**"))]
   | order(publishedAt desc) {
     _id, title, slug, publishedAt, excerpt, heroImage,
     categories[]->{title, slug},
@@ -88,11 +88,11 @@ export const POST_BY_SLUG_QUERY = groq`
 `;
  
 export const ALL_SLUGS_QUERY = groq`
-  *[_type == "post" && !(_id in path("drafts.**"))].slug.current
+  *[_type == "post" && published == true && publishedAt <= now() && !(_id in path("drafts.**"))].slug.current
 `;
  
 export const POSTS_BY_CATEGORY_QUERY = groq`
-  *[_type == "post" && $category in categories[]->slug.current && !(_id in path("drafts.**"))]
+  *[_type == "post" && published == true && publishedAt <= now() && $category in categories[]->slug.current && !(_id in path("drafts.**"))]
   | order(publishedAt desc) {
     _id, title, slug, publishedAt, excerpt, heroImage,
     categories[]->{title, slug},

@@ -1,8 +1,9 @@
 
 // This file is auto-generated on 'sanity dev'
 // Modifications to this file is automatically discarded
-import studioConfig from "..\\..\\sanity.config.mjs"
 import {renderStudio} from "sanity"
+
+const studioConfig = {missingConfigFile: true}
 
 renderStudio(
   document.getElementById("sanity"),

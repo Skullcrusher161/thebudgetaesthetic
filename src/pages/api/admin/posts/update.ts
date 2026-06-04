@@ -40,6 +40,7 @@ export const POST: APIRoute = async ({ request }) => {
     const excerpt = formData.get('excerpt')?.toString() || ''
     const categoryId = formData.get('categoryId')?.toString()
     const published = formData.get('published') === 'on'
+    const publishedAtInput = formData.get('publishedAt')?.toString()
     const coverImageFile = formData.get('coverImage') as File | null
 
     if (!postId || !title || !slug) {
@@ -49,7 +50,6 @@ export const POST: APIRoute = async ({ request }) => {
       })
     }
 
-    // Build patch object — only include what we're updating
     const patch: any = {
       title,
       slug: { _type: 'slug', current: slug },
@@ -57,6 +57,12 @@ export const POST: APIRoute = async ({ request }) => {
       excerpt,
       published,
       _updatedAt: new Date().toISOString(),
+    }
+    
+    if (publishedAtInput) {
+      patch.publishedAt = new Date(publishedAtInput).toISOString()
+    } else {
+      patch.publishedAt = new Date().toISOString()
     }
 
     // Upload new cover image if provided

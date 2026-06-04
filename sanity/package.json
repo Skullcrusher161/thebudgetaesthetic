@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev":    "npx --no-install sanity dev",
-    "build":  "npx --no-install sanity build",
+    "dev": "npx --no-install sanity dev",
+    "build": "npx --no-install sanity build",
     "deploy": "npx --no-install sanity deploy"
   },
   "dependencies": {
     "@sanity/vision": "^3.0.0",
-    "sanity": "^3.62.0",
+    "sanity": "^5.30.0",
     "styled-components": "^6.4.1"
   }
 }

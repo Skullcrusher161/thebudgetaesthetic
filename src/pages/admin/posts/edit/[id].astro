@@ -17,7 +17,7 @@ const sanity = createClient({
 
 const [post, categories] = await Promise.all([
   sanity.fetch(`*[_type == "post" && _id == $id][0]{
-    _id, title, slug, content, excerpt, published, _updatedAt,
+    _id, title, slug, content, excerpt, published, publishedAt, _updatedAt,
     categories[]->{_id, title},
     heroImage{asset->{url}},
     affiliateProducts[]{
@@ -34,6 +34,13 @@ if (!post) {
 }
 
 const currentCategoryId = post.categories?.[0]?._id ?? ''
+
+let formattedPublishedAt = '';
+if (post.publishedAt) {
+  const date = new Date(post.publishedAt);
+  const offset = date.getTimezoneOffset() * 60000;
+  formattedPublishedAt = (new Date(date.getTime() - offset)).toISOString().slice(0, 16);
+}
 
 // Serialize affiliate products so we can re-hydrate cards in the editor
 const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
@@ -117,9 +124,15 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
           </div>
 
           <div class="field">
+            <label for="publishedAt">Publish Date & Time</label>
+            <input type="datetime-local" id="publishedAt" name="publishedAt" value={formattedPublishedAt} />
+            <p class="field-hint">Leave empty to publish immediately.</p>
+          </div>
+
+          <div class="field">
             <label class="checkbox-label">
               <input type="checkbox" id="published" name="published" checked={post.published} />
-              <span>Published</span>
+              <span>Published status (visible)</span>
             </label>
           </div>
 

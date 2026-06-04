@@ -91,9 +91,15 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
           </div>
 
           <div class="field">
+            <label for="publishedAt">Publish Date & Time</label>
+            <input type="datetime-local" id="publishedAt" name="publishedAt" />
+            <p class="field-hint">Leave empty to publish immediately.</p>
+          </div>
+
+          <div class="field">
             <label class="checkbox-label">
               <input type="checkbox" id="published" name="published" />
-              <span>Publish immediately</span>
+              <span>Published status (visible)</span>
             </label>
             <p class="field-hint">Leave unchecked to save as draft.</p>
           </div>
