@@ -100,6 +100,15 @@ export const POSTS_BY_CATEGORY_QUERY = groq`
   }
 `;
 
+export const SEARCH_POSTS_QUERY = groq`
+  *[_type == "post" && published == true && publishedAt <= now() && !(_id in path("drafts.**")) && (title match $keyword || excerpt match $keyword || pt::text(content) match $keyword)]
+  | order(publishedAt desc) {
+    _id, title, slug, publishedAt, excerpt, heroImage,
+    categories[]->{title, slug},
+    "readTime": round(length(coalesce(pt::text(content), content, "")) / 200)
+  }
+`;
+
 export const CATEGORY_BY_SLUG_QUERY = groq`
   *[_type == "category" && slug.current == $slug && !(_id in path("drafts.**"))][0] {
     title, description, emoji, slug
