@@ -1208,6 +1208,11 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     const formData = new FormData(form)
     formData.set('content', editor?.innerHTML || '')
 
+    const pubAt = formData.get('publishedAt')?.toString()
+    if (pubAt) {
+      formData.set('publishedAt', new Date(pubAt).toISOString())
+    }
+
     try {
       const res = await fetch('/api/admin/posts/save', { method: 'POST', body: formData })
       const result = await res.json()

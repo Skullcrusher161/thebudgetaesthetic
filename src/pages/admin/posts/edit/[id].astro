@@ -35,13 +35,6 @@ if (!post) {
 
 const currentCategoryId = post.categories?.[0]?._id ?? ''
 
-let formattedPublishedAt = '';
-if (post.publishedAt) {
-  const date = new Date(post.publishedAt);
-  const offset = date.getTimezoneOffset() * 60000;
-  formattedPublishedAt = (new Date(date.getTime() - offset)).toISOString().slice(0, 16);
-}
-
 // Serialize affiliate products so we can re-hydrate cards in the editor
 const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
 ---
@@ -125,7 +118,7 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
 
           <div class="field">
             <label for="publishedAt">Publish Date & Time</label>
-            <input type="datetime-local" id="publishedAt" name="publishedAt" value={formattedPublishedAt} />
+            <input type="datetime-local" id="publishedAt" name="publishedAt" data-utc={post.publishedAt || ''} />
             <p class="field-hint">Leave empty to publish immediately.</p>
           </div>
 
@@ -756,6 +749,14 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
     imagePreview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Cover preview" class="cover-preview" onclick="document.getElementById('cover-image').click()" />`
   })
 
+  // ── Populate local publish date ──
+  const pubInput = document.getElementById('publishedAt') as HTMLInputElement
+  if (pubInput && pubInput.dataset.utc) {
+    const d = new Date(pubInput.dataset.utc)
+    const offset = d.getTimezoneOffset() * 60000
+    pubInput.value = new Date(d.getTime() - offset).toISOString().slice(0, 16)
+  }
+
   // ── Form submit ──
   const form = document.getElementById('post-form') as HTMLFormElement
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement
@@ -767,6 +768,12 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
     submitBtn.textContent = 'Saving...'
     const formData = new FormData(form)
     formData.set('content', editor?.innerHTML || '')
+
+    const pubAt = formData.get('publishedAt')?.toString()
+    if (pubAt) {
+      formData.set('publishedAt', new Date(pubAt).toISOString())
+    }
+
     try {
       const res = await fetch('/api/admin/posts/update', { method: 'POST', body: formData })
       const result = await res.json()
