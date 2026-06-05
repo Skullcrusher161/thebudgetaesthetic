@@ -357,16 +357,17 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
   .editor-body ul, .editor-body ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
   .editor-body blockquote { border-left: 3px solid var(--gold); padding-left: 1rem; color: var(--text-muted); font-style: italic; margin: 0.75rem 0; }
   .editor-body a { color: var(--gold); }
+  .editor-body :global(img) { max-width: 100%; height: auto; border-radius: 6px; box-sizing: border-box; }
 
   /* ── Inline images ── */
-  .inline-img-wrapper {
+  :global(.inline-img-wrapper) {
     position: relative;
     display: block;
     max-width: 100%;
     width: fit-content;
     margin: 0.75rem 0;
   }
-  .editor-body .inline-img-wrapper img.inline-img {
+  .editor-body :global(.inline-img-wrapper img.inline-img) {
     display: block;
     max-width: 250px;
     width: 100%;
@@ -375,9 +376,9 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     cursor: pointer;
     border: 2px solid transparent; transition: border-color 0.15s;
   }
-  .editor-body .inline-img-wrapper:hover img.inline-img { border-color: var(--gold); }
+  .editor-body :global(.inline-img-wrapper:hover img.inline-img) { border-color: var(--gold); }
 
-  .inline-img-remove {
+  :global(.inline-img-remove) {
     position: absolute; top: 0.35rem; right: 0.35rem;
     background: #b91c1c; color: white;
     border: none; border-radius: 50%;
@@ -386,10 +387,10 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
     display: flex; align-items: center; justify-content: center;
     opacity: 0; transition: opacity 0.15s;
   }
-  .inline-img-wrapper:hover .inline-img-remove { opacity: 1; }
+  :global(.inline-img-wrapper:hover .inline-img-remove) { opacity: 1; }
 
   /* While composing keep images at 250px max */
-  .editor-body.editing .inline-img-wrapper {
+  .editor-body.editing :global(.inline-img-wrapper) {
     max-width: 250px;
   }
 
@@ -1218,7 +1219,7 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
           // remove 'editing' marker and inline editing styles from inline images so CSS allows full width
           document.querySelectorAll('.inline-img-wrapper img.inline-img').forEach((i) => {
             const img = i as HTMLElement
-            img.style.maxWidth = ''
+            img.style.maxWidth = '100%'
             img.style.transition = ''
           })
           // reset cover preview sizing (remove small limit and allow large preview)

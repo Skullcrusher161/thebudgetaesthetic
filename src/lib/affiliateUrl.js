@@ -4,7 +4,7 @@
 // The actual geo detection + tag injection happens in middleware.js at the edge.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SITE = import.meta.env.PUBLIC_SITE_URL || "https://www.thebudgetaesthetic.com";
+const SITE = import.meta.env.PUBLIC_SITE_URL || "https://thebudgetaesthetic.vercel.app";
 
 /**
  * Returns a /go?url=... redirect URL that the edge middleware
@@ -18,8 +18,8 @@ export function buildAffiliateUrls(indiaLink, globalLink) {
   const encode = (url) => encodeURIComponent(url);
 
   return {
-    in:       `${SITE}/go?url=${encode(indiaLink)}`,
-    global:   `${SITE}/go?url=${encode(globalLink)}`,
+    in: `${SITE}/go?url=${encode(indiaLink)}`,
+    global: `${SITE}/go?url=${encode(globalLink)}`,
     // The `redirect` URL is what ProductCard href uses.
     // JS on the client reads the tba_region cookie and picks the right one.
     // Fallback (JS disabled / cookie missing): serves global link.
