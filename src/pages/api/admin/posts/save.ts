@@ -50,6 +50,8 @@ export const POST: APIRoute = async ({ request }) => {
     const excerpt = formData.get('excerpt')?.toString() || ''
     const categoryId = formData.get('categoryId')?.toString()
     const published = formData.get('published') === 'on'
+    const isPinned = formData.get('isPinned') === 'on'
+    const pinterestLink = formData.get('pinterestLink')?.toString() || ''
     const publishedAtInput = formData.get('publishedAt')?.toString()
     const coverImageFile = formData.get('coverImage') as File | null
 
@@ -116,7 +118,12 @@ export const POST: APIRoute = async ({ request }) => {
       content,           // raw HTML; used for display
       excerpt,
       published,
+      isPinned,
       publishedAt: finalPublishedAt,
+    }
+    
+    if (pinterestLink) {
+      postDoc.pinterestLink = pinterestLink
     }
 
     if (affiliateProducts.length > 0) {

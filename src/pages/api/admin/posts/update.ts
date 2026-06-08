@@ -40,6 +40,8 @@ export const POST: APIRoute = async ({ request }) => {
     const excerpt = formData.get('excerpt')?.toString() || ''
     const categoryId = formData.get('categoryId')?.toString()
     const published = formData.get('published') === 'on'
+    const isPinned = formData.get('isPinned') === 'on'
+    const pinterestLink = formData.get('pinterestLink')?.toString() || ''
     const publishedAtInput = formData.get('publishedAt')?.toString()
     const coverImageFile = formData.get('coverImage') as File | null
 
@@ -56,6 +58,8 @@ export const POST: APIRoute = async ({ request }) => {
       content,
       excerpt,
       published,
+      isPinned,
+      pinterestLink,
       _updatedAt: new Date().toISOString(),
     }
     

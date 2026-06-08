@@ -86,6 +86,8 @@ const contentHtml = post.content
         : String(post.content)
     )
   : "";
+
+const pinterestUrl = post.pinterestLink || `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(Astro.url.toString())}&description=${encodeURIComponent(post.title)}&media=${encodeURIComponent(heroImg || '')}`;
 ---
 
 <BaseLayout
@@ -216,7 +218,7 @@ const contentHtml = post.content
       <p class="text-charcoal/60 font-body text-sm mb-6">Pin this post on Pinterest so you never lose it.</p>
       <div class="flex justify-center gap-4 flex-wrap">
         <a
-          href={`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(Astro.url.toString())}&description=${encodeURIComponent(post.title)}&media=${encodeURIComponent(heroImg || '')}`}
+          href={pinterestUrl}
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex items-center gap-2 bg-[#E60023] text-white font-body font-medium text-sm px-6 py-3 rounded-full hover:bg-[#c4001d] transition-colors shadow-md"
@@ -235,4 +237,55 @@ const contentHtml = post.content
       </div>
     </section>
   </div>
+
+  <!-- ── Analytics Tracking ── -->
+  <script define:vars={{ currentSlug: post.slug.current, currentTitle: post.title }}>
+    // 1. Track Post View (once per session per post)
+    const viewKey = `viewed_${currentSlug}`;
+    if (!sessionStorage.getItem(viewKey)) {
+      fetch('/api/track-view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postSlug: currentSlug, postTitle: currentTitle })
+      }).then(res => {
+        if (res.ok) sessionStorage.setItem(viewKey, 'true');
+      }).catch(console.error);
+    }
+
+    // 2. Track Affiliate Clicks
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (!link) return;
+
+      const href = link.href || '';
+      if (href.includes('amazon.') || href.includes('amzn.to')) {
+        let itemName = 'Unknown Product';
+        
+        // Try to get product name from ProductCard component
+        const productCard = link.closest('.group');
+        if (productCard) {
+          const nameEl = productCard.querySelector('h3[itemprop="name"]');
+          if (nameEl) itemName = nameEl.textContent.trim();
+        } else {
+          // Try to get product name from inline editor product card
+          const inlineCard = link.closest('.inline-product-card');
+          if (inlineCard) {
+            const nameEl = inlineCard.querySelector('.card-name');
+            if (nameEl) itemName = nameEl.textContent.trim();
+          }
+        }
+
+        fetch('/api/track-click', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            itemName,
+            targetUrl: href,
+            postSlug: currentSlug
+          }),
+          keepalive: true
+        }).catch(console.error);
+      }
+    });
+  </script>
 </BaseLayout>

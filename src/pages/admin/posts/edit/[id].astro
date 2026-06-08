@@ -17,7 +17,7 @@ const sanity = createClient({
 
 const [post, categories] = await Promise.all([
   sanity.fetch(`*[_type == "post" && _id == $id][0]{
-    _id, title, slug, content, excerpt, published, publishedAt, _updatedAt,
+    _id, title, slug, content, excerpt, published, isPinned, pinterestLink, publishedAt, _updatedAt,
     categories[]->{_id, title},
     heroImage{asset->{url}},
     affiliateProducts[]{
@@ -127,6 +127,19 @@ const savedProducts = JSON.stringify(post.affiliateProducts ?? [])
               <input type="checkbox" id="published" name="published" checked={post.published} />
               <span>Published status (visible)</span>
             </label>
+          </div>
+
+          <div class="field">
+            <label class="checkbox-label">
+              <input type="checkbox" id="isPinned" name="isPinned" checked={post.isPinned} />
+              <span>Pin to top of blog</span>
+            </label>
+          </div>
+
+          <div class="field">
+            <label for="pinterestLink">Pinterest Pin Link</label>
+            <input type="url" id="pinterestLink" name="pinterestLink" value={post.pinterestLink || ''} placeholder="https://pinterest.com/pin/..." />
+            <p class="field-hint">Optional: Dedicated Pinterest link</p>
           </div>
 
           <div class="form-actions">

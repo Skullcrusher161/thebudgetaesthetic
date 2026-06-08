@@ -67,8 +67,8 @@ function groq(strings, ...values) {
  
 export const ALL_POSTS_QUERY = groq`
   *[_type == "post" && published == true && publishedAt <= now() && !(_id in path("drafts.**"))]
-  | order(publishedAt desc) {
-    _id, title, slug, publishedAt, excerpt, heroImage,
+  | order(coalesce(isPinned, false) desc, publishedAt desc) {
+    _id, title, slug, publishedAt, excerpt, heroImage, isPinned,
     categories[]->{title, slug},
     "readTime": round(length(coalesce(pt::text(content), content, "")) / 200)
   }
@@ -77,7 +77,7 @@ export const ALL_POSTS_QUERY = groq`
 export const POST_BY_SLUG_QUERY = groq`
   *[_type == "post" && slug.current == $slug && !(_id in path("drafts.**"))][0] {
     _id, title, slug, publishedAt, updatedAt, excerpt,
-    heroImage{alt, asset->{_id, url}},
+    heroImage{alt, asset->{_id, url}}, pinterestLink,
     content, seo, categories[]->{title, slug},
     affiliateProducts[] {
       _key, name, productImage, indiaLink, globalLink,
@@ -93,8 +93,8 @@ export const ALL_SLUGS_QUERY = groq`
  
 export const POSTS_BY_CATEGORY_QUERY = groq`
   *[_type == "post" && published == true && publishedAt <= now() && $category in categories[]->slug.current && !(_id in path("drafts.**"))]
-  | order(publishedAt desc) {
-    _id, title, slug, publishedAt, excerpt, heroImage,
+  | order(coalesce(isPinned, false) desc, publishedAt desc) {
+    _id, title, slug, publishedAt, excerpt, heroImage, isPinned,
     categories[]->{title, slug},
     "readTime": round(length(pt::text(content)) / 200)
   }
@@ -102,8 +102,8 @@ export const POSTS_BY_CATEGORY_QUERY = groq`
 
 export const SEARCH_POSTS_QUERY = groq`
   *[_type == "post" && published == true && publishedAt <= now() && !(_id in path("drafts.**")) && (title match $keyword || excerpt match $keyword || pt::text(content) match $keyword)]
-  | order(publishedAt desc) {
-    _id, title, slug, publishedAt, excerpt, heroImage,
+  | order(coalesce(isPinned, false) desc, publishedAt desc) {
+    _id, title, slug, publishedAt, excerpt, heroImage, isPinned,
     categories[]->{title, slug},
     "readTime": round(length(coalesce(pt::text(content), content, "")) / 200)
   }

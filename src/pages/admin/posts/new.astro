@@ -104,6 +104,19 @@ const categories = await sanity.fetch(`*[_type == "category"] | order(title asc)
             <p class="field-hint">Leave unchecked to save as draft.</p>
           </div>
 
+          <div class="field">
+            <label class="checkbox-label">
+              <input type="checkbox" id="isPinned" name="isPinned" />
+              <span>Pin to top of blog</span>
+            </label>
+          </div>
+
+          <div class="field">
+            <label for="pinterestLink">Pinterest Pin Link</label>
+            <input type="url" id="pinterestLink" name="pinterestLink" placeholder="https://pinterest.com/pin/..." />
+            <p class="field-hint">Optional: Dedicated Pinterest link</p>
+          </div>
+
           <div class="form-actions">
             <button type="submit" class="btn-primary" id="submit-btn">Save Post</button>
             <a href="/admin/posts" class="btn-secondary">Cancel</a>

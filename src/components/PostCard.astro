@@ -10,9 +10,10 @@ interface Props {
   readTime?:   number;
   categories?: { title: string; slug: { current: string } }[];
   index?:      number;
+  isPinned?:   boolean;
 }
 
-const { title, slug, publishedAt, excerpt, heroImage, readTime, categories, index = 0 } = Astro.props;
+const { title, slug, publishedAt, excerpt, heroImage, readTime, categories, index = 0, isPinned = false } = Astro.props;
 
 const imgUrl  = heroImage ? heroImageUrl(heroImage, 600) : null;
 const altText = heroImage?.alt || title;
@@ -49,16 +50,24 @@ const delay   = `${index * 60}ms`;
 
   <!-- Content Overlay -->
   <div class="absolute inset-0 z-20 p-5 flex flex-col justify-end pointer-events-none">
-    {categories && categories.length > 0 && (
-      <div class="flex flex-wrap gap-1 mb-2 pointer-events-auto">
-        {categories.map(cat => (
+    {(categories?.length || 0) > 0 || isPinned ? (
+      <div class="flex flex-wrap gap-1 mb-2 pointer-events-auto items-center">
+        {isPinned && (
+          <span class="badge bg-accent/20 text-accent hover:bg-accent/30 transition-colors text-[10px] uppercase tracking-widest backdrop-blur-md border border-accent/20 inline-flex items-center gap-1">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <path d="M16 11V5.5C16 4.67 15.33 4 14.5 4H9.5C8.67 4 8 4.67 8 5.5V11L6 14V16H11V21L12 23L13 21V16H18V14L16 11Z"/>
+            </svg>
+            Pinned
+          </span>
+        )}
+        {categories?.map(cat => (
           <a href={`/category/${cat.slug.current}`}
              class="badge bg-white/20 text-white hover:bg-electric transition-colors text-[10px] uppercase tracking-widest backdrop-blur-md border border-white/10">
             {cat.title}
           </a>
         ))}
       </div>
-    )}
+    ) : null}
 
     <h2 class="font-display font-bold text-lg md:text-xl text-white leading-snug group-hover:text-electric transition-colors mb-2 pointer-events-auto">
       <a href={href} class="before:absolute before:inset-0">{title}</a>

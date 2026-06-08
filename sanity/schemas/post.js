@@ -63,6 +63,13 @@ export default {
       initialValue: false,
     },
     {
+      name: 'isPinned',
+      title: 'Pinned Post',
+      type: 'boolean',
+      initialValue: false,
+      description: 'Pin this post to the top of the blog list',
+    },
+    {
       name: 'affiliateProducts',
       title: 'Affiliate Products',
       type: 'array',
@@ -98,6 +105,12 @@ export default {
           ],
         },
       ],
+    },
+    {
+      name: 'pinterestLink',
+      title: 'Pinterest Pin Link',
+      type: 'url',
+      description: 'Optional: Link to the dedicated Pinterest pin for this post',
     },
     {
       name: 'seo',
